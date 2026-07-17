@@ -1,0 +1,38 @@
+Analyzing astrology_partner...                                  
+
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/utils/snackbar_util.dart:32:41 • deprecated_member_use
+   info • Statements in a for should be enclosed in a block • lib/features/auth/presentation/controllers/auth_controller.dart:376:35 • curly_braces_in_flow_control_structures
+   info • Statements in a for should be enclosed in a block • lib/features/auth/presentation/controllers/auth_controller.dart:377:34 • curly_braces_in_flow_control_structures
+   info • The prefix 'IO' isn't a lower_case_with_underscores identifier • lib/features/calls/presentation/controllers/partner_call_controller.dart:7:60 • library_prefixes
+   info • Don't invoke 'print' in production code • lib/features/calls/presentation/controllers/partner_call_controller.dart:243:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/calls/presentation/controllers/partner_call_controller.dart:348:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/calls/presentation/pages/incoming_call_overlay.dart:33:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/calls/presentation/pages/incoming_call_overlay.dart:128:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/calls/presentation/pages/voice_call_page.dart:30:41 • deprecated_member_use
+   info • Unnecessary override • lib/features/chat/presentation/controllers/chat_inbox_controller.dart:16:8 • unnecessary_overrides
+   info • The prefix 'IO' isn't a lower_case_with_underscores identifier • lib/features/chat/presentation/controllers/partner_chat_controller.dart:6:60 • library_prefixes
+   info • Don't invoke 'print' in production code • lib/features/chat/presentation/controllers/partner_chat_controller.dart:83:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/blog_list_page.dart:131:44 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/chat_inbox_page.dart:75:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/chat_inbox_page.dart:85:62 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/chat_inbox_page.dart:123:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/chat_request_page.dart:37:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/chat_request_page.dart:72:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/chat_request_page.dart:200:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/partner_chat_page.dart:144:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/partner_chat_page.dart:184:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/partner_chat_page.dart:241:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chat/presentation/pages/partner_chat_page.dart:361:40 • deprecated_member_use
+   info • The member 'refresh' overrides an inherited member but isn't annotated with '@override' • lib/features/consultations/presentation/controllers/consultation_controller.dart:123:16 • annotate_overrides
+   info • Use the null-aware marker '?' rather than a null check via an 'if' • lib/features/earnings/presentation/controllers/earnings_controller.dart:48:7 • use_null_aware_elements
+   info • The member 'refresh' overrides an inherited member but isn't annotated with '@override' • lib/features/earnings/presentation/controllers/earnings_controller.dart:82:16 • annotate_overrides
+   info • The member 'refresh' overrides an inherited member but isn't annotated with '@override' • lib/features/home/presentation/controllers/home_controller.dart:87:16 • annotate_overrides
+   info • The prefix 'IO' isn't a lower_case_with_underscores identifier • lib/features/live/presentation/pages/live_dashboard_page.dart:14:60 • library_prefixes
+   info • Unnecessary use of multiple underscores • lib/features/live/presentation/pages/live_dashboard_page.dart:115:29 • unnecessary_underscores
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/profile/presentation/pages/availability_page.dart:67:21 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/profile/presentation/pages/availability_page.dart:139:13 • deprecated_member_use
+   info • Use interpolation to compose strings and values • lib/features/profile/presentation/pages/edit_profile_page.dart:307:27 • prefer_interpolation_to_compose_strings
+   info • Use interpolation to compose strings and values • lib/features/profile/presentation/pages/edit_profile_page.dart:362:15 • prefer_interpolation_to_compose_strings
+   info • Use interpolation to compose strings and values • lib/features/support/presentation/pages/about_page.dart:41:15 • prefer_interpolation_to_compose_strings
+
+34 issues found. (ran in 13.6s)
