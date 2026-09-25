@@ -15,14 +15,14 @@ class PujaOrdersListPage extends GetView<PujaController> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Puja Orders'),
+          title: Text('puja_orders'.tr),
           bottom: TabBar(
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.primary,
-            tabs: const [
-              Tab(text: 'Active / New'),
-              Tab(text: 'History'),
+            tabs: [
+              Tab(text: 'active_new'.tr),
+              Tab(text: 'history'.tr),
             ],
           ),
         ),
@@ -33,8 +33,8 @@ class PujaOrdersListPage extends GetView<PujaController> {
 
           return TabBarView(
             children: [
-              _buildList(controller.activePujaOrders, 'No active puja orders'),
-              _buildList(controller.completedPujaOrders, 'No past puja orders'),
+              _buildList(controller.activePujaOrders, 'no_active_puja_orders'.tr),
+              _buildList(controller.completedPujaOrders, 'no_past_puja_orders'.tr),
             ],
           );
         }),

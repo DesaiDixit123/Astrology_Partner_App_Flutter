@@ -186,11 +186,33 @@ class ApiService {
     } catch (e) { return null; }
   }
 
-  static bool isSuccess(Map<String, dynamic>? response) =>
-      response != null && response['IsSuccess'] == true;
+  static bool isSuccess(Map<String, dynamic>? response) {
+    if (response == null) return false;
+    if (response['IsSuccess'] == true ||
+        response['isSuccess'] == true ||
+        response['status'] == 200 ||
+        response['Status'] == 200 ||
+        response['success'] == true ||
+        response['IsSuccess'] == 1 ||
+        response['IsSuccess'] == 'true') {
+      return true;
+    }
+    final data = response['Data'] ?? response['data'];
+    if (data is Map && (data['url'] != null || data['full_url'] != null || data['upload_url'] != null)) {
+      return true;
+    }
+    return false;
+  }
 
-  static dynamic getData(Map<String, dynamic>? response) => response?['Data'];
+  static dynamic getData(Map<String, dynamic>? response) =>
+      response?['Data'] ?? response?['data'];
 
-  static String getMessage(Map<String, dynamic>? response) =>
-      response?['Message'] ?? 'Something went wrong';
+  static String getMessage(Map<String, dynamic>? response) {
+    if (response == null) return 'Something went wrong';
+    return response['Message'] ??
+        response['message'] ??
+        response['error'] ??
+        response['msg'] ??
+        'Something went wrong';
+  }
 }

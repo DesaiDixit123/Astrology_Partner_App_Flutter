@@ -8,6 +8,7 @@ import '../controllers/subscription_controller.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/utils/snackbar_util.dart';
+import '../../../../core/localization/app_translations.dart';
 
 class SubscriptionScreen extends GetView<SubscriptionController> {
   const SubscriptionScreen({super.key});
@@ -18,7 +19,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
       backgroundColor: AppColors.deepCosmic,
       appBar: AppBar(
         title: Text(
-          'Subscriptions',
+          'subscriptions'.tr,
           style: AppTextStyles.h3.copyWith(color: Colors.white),
         ),
         backgroundColor: AppColors.deepCosmic,
@@ -52,8 +53,8 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   FadeInUp(
                     child: Text(
                       hasActive
-                          ? 'Upgrade or Renew Subscription'
-                          : 'Available Subscription Packages',
+                          ? 'upgrade_renew_subscription'.tr
+                          : 'available_subscription_packages'.tr,
                       style: AppTextStyles.h2.copyWith(color: Colors.white),
                     ),
                   ),
@@ -69,7 +70,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Payment History',
+                          'payment_history'.tr,
                           style: AppTextStyles.h2.copyWith(color: Colors.white),
                         ),
                         SizedBox(height: 16.h),
@@ -132,7 +133,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ACTIVE PACKAGE',
+                    'active_package'.tr,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.primaryLight,
                       letterSpacing: 1.5,
@@ -141,7 +142,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    pkg['name'] ?? 'N/A',
+                    (pkg['name']?.toString() ?? 'N/A').trPkg,
                     style: AppTextStyles.h1.copyWith(color: Colors.white),
                   ),
                 ],
@@ -161,8 +162,8 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                 ),
                 child: Text(
                   remainingDays > 0
-                      ? '$remainingDays Days Remaining'
-                      : 'Expired',
+                      ? 'days_remaining'.trParams({'days': '$remainingDays'})
+                      : 'expired'.tr,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: remainingDays > 0 ? Colors.greenAccent : Colors.redAccent,
                     fontWeight: FontWeight.bold,
@@ -174,25 +175,25 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
           SizedBox(height: 12.h),
           if (expiry != null)
             Text(
-              'Expires on: ${expiry.day}/${expiry.month}/${expiry.year}',
+              'expires_on'.trParams({'date': '${expiry.day}/${expiry.month}/${expiry.year}'}),
               style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
             ),
           Divider(color: Colors.white.withValues(alpha: 0.15), height: 30.h),
           Text(
-            'Remaining Limits & Usage',
+            'remaining_limits_usage'.tr,
             style: AppTextStyles.bodyLarge
                 .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 16.h),
-          _buildUsageItem('Calls', activeSub['calls_used'] ?? 0,
+          _buildUsageItem('call'.tr, activeSub['calls_used'] ?? 0,
               pkg['call_limit'] ?? 0),
-          _buildUsageItem('Chats', activeSub['chat_used'] ?? 0,
+          _buildUsageItem('chat'.tr, activeSub['chat_used'] ?? 0,
               pkg['chat_limit'] ?? 0),
-          _buildUsageItem('Video Calls', activeSub['video_used'] ?? 0,
+          _buildUsageItem('video_call'.tr, activeSub['video_used'] ?? 0,
               pkg['video_call_limit'] ?? 0),
-          _buildUsageItem('Reports', activeSub['report_used'] ?? 0,
+          _buildUsageItem('reports'.tr, activeSub['report_used'] ?? 0,
               pkg['report_limit'] ?? 0),
-          _buildUsageItem('Pujas', activeSub['puja_used'] ?? 0,
+          _buildUsageItem('puja_orders'.tr, activeSub['puja_used'] ?? 0,
               pkg['puja_limit'] ?? 0),
         ],
       ),
@@ -210,7 +211,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                 style: AppTextStyles.bodyMedium
                     .copyWith(color: Colors.white70)),
             Text(
-              'Used: $used (Unlimited)',
+              'used_unlimited'.trParams({'used': '$used'}),
               style: AppTextStyles.bodyMedium
                   .copyWith(color: Colors.greenAccent, fontWeight: FontWeight.bold),
             ),
@@ -234,7 +235,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   style: AppTextStyles.bodyMedium
                       .copyWith(color: Colors.white70)),
               Text(
-                '$used / $limit used',
+                'used_limit'.trParams({'used': '$used', 'limit': '$limit'}),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: percent >= 0.9 ? Colors.redAccent : Colors.white,
                   fontWeight: FontWeight.bold,
@@ -259,10 +260,15 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
 
   Widget _buildHistoryCard(Map item) {
     final pkg = item['package_id'] ?? {};
-    final pkgName = pkg['name']?.toString() ?? 'Package';
+    final pkgName = (pkg['name']?.toString() ?? 'Package').trPkg;
     final paymentId = item['payment_id']?.toString() ?? '';
     final paymentMethod = item['payment_method']?.toString() ?? 'N/A';
-    final amount = item['amount_paid'] ?? item['amount'] ?? 0;
+    final amount = item['total_amount'] ??
+        item['amount_paid'] ??
+        item['amount'] ??
+        (item['package_id'] is Map ? item['package_id']['price'] : null) ??
+        item['price'] ??
+        0;
     final status = item['status']?.toString() ?? 'completed';
 
     DateTime? purchasedAt;
@@ -304,7 +310,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  isSuccess ? 'Success' : status.capitalizeFirst ?? status,
+                  isSuccess ? 'success'.tr : status.capitalizeFirst ?? status,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: isSuccess ? Colors.greenAccent : Colors.redAccent,
                     fontWeight: FontWeight.bold,
@@ -321,7 +327,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
               Expanded(
                 child: _buildHistoryDetail(
                   Icons.currency_rupee_rounded,
-                  'Amount Paid',
+                  'amount_paid'.tr,
                   '₹$amount',
                   Colors.greenAccent,
                 ),
@@ -329,7 +335,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
               Expanded(
                 child: _buildHistoryDetail(
                   Icons.payment_rounded,
-                  'Method',
+                  'payment_method'.tr,
                   paymentMethod.toUpperCase(),
                   AppColors.primaryLight,
                 ),
@@ -340,7 +346,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
           if (paymentId.isNotEmpty)
             _buildHistoryDetail(
               Icons.receipt_long_rounded,
-              'Payment ID',
+              'payment_id'.tr,
               paymentId,
               Colors.white54,
             ),
@@ -348,7 +354,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
             SizedBox(height: 4.h),
             _buildHistoryDetail(
               Icons.access_time_rounded,
-              'Purchased On',
+              'purchased_on'.tr,
               '${purchasedAt.day}/${purchasedAt.month}/${purchasedAt.year}  ${purchasedAt.hour.toString().padLeft(2, '0')}:${purchasedAt.minute.toString().padLeft(2, '0')}',
               Colors.white38,
             ),
@@ -385,7 +391,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   Icon(Icons.download_rounded, color: Colors.greenAccent, size: 14.sp),
                   SizedBox(width: 6.w),
                   Text(
-                    'Download Invoice',
+                    'download_invoice'.tr,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: Colors.greenAccent,
                       fontWeight: FontWeight.bold,
@@ -437,7 +443,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
         padding: EdgeInsets.all(40.h),
         alignment: Alignment.center,
         child: Text(
-          'No packages available at the moment.',
+          'no_packages_available'.tr,
           style: AppTextStyles.bodyLarge.copyWith(color: Colors.white70),
         ),
       );
@@ -450,12 +456,12 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
       separatorBuilder: (_, __) => SizedBox(height: 20.h),
       itemBuilder: (context, idx) {
         final pkg = pkgs[idx];
-        return _buildPackageItemCard(pkg);
+        return _buildPackageItemCard(context, pkg);
       },
     );
   }
 
-  Widget _buildPackageItemCard(Map pkg) {
+  Widget _buildPackageItemCard(BuildContext context, Map pkg) {
     final isPopular = pkg['popular'] == true;
 
     Color cardAccent;
@@ -465,6 +471,9 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
     } catch (_) {
       cardAccent = AppColors.primary;
     }
+
+    final rawName = pkg['name']?.toString() ?? '';
+    final pkgDisplayName = Get.keys.containsKey(rawName.toLowerCase()) ? rawName.toLowerCase().tr : rawName;
 
     final validityDays = pkg['validity_days'];
     final validityText = validityDays != null ? '$validityDays Days' : 'N/A';
@@ -504,7 +513,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                 children: [
                   Expanded(
                     child: Text(
-                      pkg['name'] ?? '',
+                      pkgDisplayName,
                       style: AppTextStyles.h2.copyWith(color: Colors.white),
                     ),
                   ),
@@ -532,7 +541,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                       color: Colors.white54, size: 13.sp),
                   SizedBox(width: 5.w),
                   Text(
-                    'Valid for $validityText',
+                    'valid_for'.trParams({'days': validityText}),
                     style: AppTextStyles.bodyMedium
                         .copyWith(color: Colors.white60),
                   ),
@@ -553,15 +562,15 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
 
               // ── Feature limits ────────────────────────────────────
               _buildFeatureLimitRow(
-                  Icons.call_rounded, 'Voice Calls', pkg['call_limit']),
+                  Icons.call_rounded, 'call'.tr, pkg['call_limit']),
               _buildFeatureLimitRow(
-                  Icons.chat_bubble_outline_rounded, 'Chats', pkg['chat_limit']),
+                  Icons.chat_bubble_outline_rounded, 'chat'.tr, pkg['chat_limit']),
               _buildFeatureLimitRow(
-                  Icons.videocam_rounded, 'Video Calls', pkg['video_call_limit']),
+                  Icons.videocam_rounded, 'video_call'.tr, pkg['video_call_limit']),
               _buildFeatureLimitRow(
-                  Icons.description_rounded, 'Reports', pkg['report_limit']),
+                  Icons.description_rounded, 'reports'.tr, pkg['report_limit']),
               _buildFeatureLimitRow(
-                  Icons.celebration_rounded, 'Puja Orders', pkg['puja_limit']),
+                  Icons.celebration_rounded, 'puja_orders'.tr, pkg['puja_limit']),
 
               // ── GST breakdown ─────────────────────────────────────
               if (hasTax) ...[
@@ -577,21 +586,21 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   child: Column(
                     children: [
                       _buildPriceRow(
-                        'Base Price',
+                        'base_price'.tr,
                         '₹${pkg['price']}',
                         Colors.white60,
                         Colors.white70,
                       ),
                       SizedBox(height: 6.h),
                       _buildPriceRow(
-                        '${pkg['tax_details']?['gst_name'] ?? 'GST'}',
+                        '${pkg['tax_details']?['gst_name'] ?? 'gst'.tr}',
                         '(+) ₹${pkg['tax_amount']}',
                         AppColors.primaryLight,
                         AppColors.primaryLight,
                       ),
                       Divider(color: Colors.white10, height: 14.h),
                       _buildPriceRow(
-                        'Total Amount',
+                        'total_amount'.tr,
                         '₹${pkg['total_amount']}',
                         Colors.white,
                         Colors.greenAccent,
@@ -611,6 +620,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                       onPressed: controller.isPurchasing.value
                           ? null
                           : () => _showPurchaseDialog(
+                                context,
                                 pkg['_id']?.toString() ?? '',
                                 pkg['name']?.toString() ?? '',
                                 pkg['total_amount'] ?? pkg['price'],
@@ -645,8 +655,8 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                           SizedBox(width: 8.w),
                           Text(
                             controller.isPurchasing.value
-                                ? 'Processing...'
-                                : 'Buy Now',
+                                ? 'processing'.tr
+                                : 'buy_now'.tr,
                             style: AppTextStyles.button
                                 .copyWith(color: Colors.white),
                           ),
@@ -672,7 +682,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
-                'POPULAR',
+                'popular'.tr,
                 style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.white, fontWeight: FontWeight.bold),
               ),
@@ -707,7 +717,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
               borderRadius: BorderRadius.circular(6.r),
             ),
             child: Text(
-              limitVal == -1 ? '∞ Unlimited' : '$limitVal',
+              limitVal == -1 ? 'unlimited'.tr : '$limitVal',
               style: AppTextStyles.bodyMedium.copyWith(
                 color: limitVal == -1 ? Colors.greenAccent : Colors.white,
                 fontWeight: FontWeight.bold,
@@ -744,6 +754,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
   }
 
   void _showPurchaseDialog(
+    BuildContext context,
     String id,
     String name,
     dynamic totalPrice,
@@ -787,19 +798,19 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
               ),
               SizedBox(height: 16.h),
               Text(
-                'Confirm Purchase',
+                'confirm_purchase'.tr,
                 style: AppTextStyles.h3.copyWith(color: Colors.white),
               ),
               SizedBox(height: 10.h),
               Text(
-                'You are about to subscribe to',
+                'subscribe_to_confirm'.tr,
                 style:
                     AppTextStyles.bodyMedium.copyWith(color: Colors.white60),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 4.h),
               Text(
-                '"$name"',
+                '"${name.trPkg}"',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: accentColor,
                   fontWeight: FontWeight.bold,
@@ -832,7 +843,11 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                     child: OutlinedButton(
                       onPressed: () {
                         controller.isPurchasing.value = false;
-                        Get.back();
+                        if (Navigator.canPop(context)) {
+                          Navigator.of(context, rootNavigator: true).pop();
+                        } else {
+                          Get.back(closeOverlays: true);
+                        }
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white38),
@@ -842,7 +857,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                         ),
                       ),
                       child: Text(
-                        'Cancel',
+                        'cancel'.tr,
                         style: AppTextStyles.button
                             .copyWith(color: Colors.white70),
                       ),
@@ -852,7 +867,11 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Get.back();
+                        if (Navigator.canPop(context)) {
+                          Navigator.of(context, rootNavigator: true).pop();
+                        } else {
+                          Get.back(closeOverlays: true);
+                        }
                         controller.initiateRazorpayPayment(id);
                       },
                       style: ElevatedButton.styleFrom(
@@ -864,7 +883,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                         ),
                       ),
                       child: Text(
-                        'Confirm',
+                        'confirm'.tr,
                         style:
                             AppTextStyles.button.copyWith(color: Colors.white),
                       ),
@@ -876,7 +895,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
           ),
         ),
       ),
-      barrierDismissible: false,
+      barrierDismissible: true,
     );
   }
 }

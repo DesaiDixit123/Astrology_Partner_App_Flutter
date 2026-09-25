@@ -127,6 +127,10 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   Widget _buildStatsSection() {
+    final followerCount = controller.followersList.isNotEmpty
+        ? controller.followersList.length
+        : (controller.userData['followers_count'] ?? controller.userData['followers'] ?? 0);
+
     return Row(
       children: [
         Expanded(
@@ -135,15 +139,17 @@ class ProfilePage extends GetView<ProfileController> {
             '${controller.userData['rating'] ?? 0.0} ⭐',
             Icons.star_rounded,
             Colors.amber,
+            onTap: () => Get.toNamed(AppRoutes.reviews),
           ),
         ),
         SizedBox(width: 12.w),
         Expanded(
           child: _buildSimpleStatCard(
-            'clients'.tr,
-            '${controller.userData['totalConsultations'] ?? 0}',
-            Icons.people_rounded,
-            Colors.blue,
+            'my_followers'.tr,
+            '$followerCount',
+            Icons.favorite_rounded,
+            Colors.pinkAccent,
+            onTap: () => Get.to(() => const FollowersListPage()),
           ),
         ),
       ],
@@ -154,10 +160,12 @@ class ProfilePage extends GetView<ProfileController> {
     String label,
     String value,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    VoidCallback? onTap,
+  }) {
     return PremiumCard(
       padding: EdgeInsets.all(16.w),
+      onTap: onTap,
       child: Column(
         children: [
           Icon(icon, color: color, size: 24.sp),
@@ -179,7 +187,7 @@ class ProfilePage extends GetView<ProfileController> {
         ),
         _buildMenuItem(
           Icons.favorite_rounded,
-          'My Followers',
+          'my_followers',
           () => Get.to(() => const FollowersListPage()),
         ),
         _buildMenuItem(
@@ -189,12 +197,12 @@ class ProfilePage extends GetView<ProfileController> {
         ),
         _buildMenuItem(
           Icons.stars_rounded,
-          'My Subscription',
+          'my_subscription',
           () => Get.toNamed(AppRoutes.subscription),
         ),
         _buildMenuItem(
           Icons.brightness_7_rounded,
-          'Puja Orders',
+          'puja_orders',
           () => Get.toNamed(AppRoutes.pujaOrders),
         ),
         _buildMenuItem(

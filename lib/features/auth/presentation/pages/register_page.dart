@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:astrology_partner/core/theme/app_colors.dart';
 import 'package:astrology_partner/core/theme/app_text_styles.dart';
 import 'package:astrology_partner/shared/widgets/premium_card.dart';
@@ -160,19 +161,22 @@ class RegisterPage extends GetView<AuthController> {
   }
 
   Widget _buildBottomNav() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Obx(
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Obx(
         () => Row(
           children: [
             if (_currentStep.value > 1) ...[
@@ -218,8 +222,9 @@ class RegisterPage extends GetView<AuthController> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSkillStep(BuildContext context) {
     return SingleChildScrollView(
@@ -483,21 +488,31 @@ class RegisterPage extends GetView<AuthController> {
           SizedBox(height: 24.h),
           _buildSection('documents'.tr, [
             _buildDocumentUpload(
-              'aadhaar'.tr,
+              'Aadhaar Card Front *',
               controller.aadhaarImageUrl,
               controller.pickAadhaarImage,
+              fileRx: controller.aadhaarImage,
             ),
             SizedBox(height: 16.h),
             _buildDocumentUpload(
-              'pan_card'.tr,
+              'Aadhaar Card Back *',
+              controller.aadhaarBackImageUrl,
+              controller.pickAadhaarBackImage,
+              fileRx: controller.aadhaarBackImage,
+            ),
+            SizedBox(height: 16.h),
+            _buildDocumentUpload(
+              'PAN Card *',
               controller.panCardImageUrl,
               controller.pickPanCardImage,
+              fileRx: controller.panCardImage,
             ),
             SizedBox(height: 16.h),
             _buildDocumentUpload(
-              'certificate'.tr,
+              'Certificate',
               controller.certificateImageUrl,
               controller.pickCertificateImage,
+              fileRx: controller.certificateImage,
             ),
           ], isRequired: true),
         ],
@@ -992,7 +1007,12 @@ class RegisterPage extends GetView<AuthController> {
     );
   }
 
-  Widget _buildDocumentUpload(String label, RxString url, VoidCallback onTap) {
+  Widget _buildDocumentUpload(
+    String label,
+    RxString url,
+    VoidCallback onTap, {
+    Rx<File?>? fileRx,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1001,30 +1021,39 @@ class RegisterPage extends GetView<AuthController> {
         GestureDetector(
           onTap: onTap,
           child: Obx(
-            () => Container(
-              height: 100.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: AppColors.border,
-                  style: BorderStyle.solid,
+            () {
+              final hasLocalFile = fileRx != null && fileRx.value != null;
+              final hasUrl = url.value.isNotEmpty;
+
+              return Container(
+                height: 120.h,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: (hasLocalFile || hasUrl)
+                        ? AppColors.primary
+                        : AppColors.border,
+                    width: (hasLocalFile || hasUrl) ? 1.5 : 1.0,
+                  ),
                 ),
-              ),
-              child: url.value.isEmpty
-                  ? Center(
-                      child: Icon(
-                        Icons.add_a_photo_outlined,
-                        color: AppColors.primary,
-                        size: 32.sp,
+                child: (!hasLocalFile && !hasUrl)
+                    ? Center(
+                        child: Icon(
+                          Icons.add_a_photo_outlined,
+                          color: AppColors.primary,
+                          size: 32.sp,
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: hasLocalFile
+                            ? Image.file(fileRx.value!, fit: BoxFit.cover)
+                            : Image.network(url.value, fit: BoxFit.cover),
                       ),
-                    )
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(12.r),
-                      child: Image.network(url.value, fit: BoxFit.cover),
-                    ),
-            ),
+              );
+            },
           ),
         ),
       ],
@@ -1036,48 +1065,60 @@ class RegisterPage extends GetView<AuthController> {
       child: GestureDetector(
         onTap: controller.pickImage,
         child: Obx(
-          () => Stack(
-            children: [
-              Container(
-                width: 100.w,
-                height: 100.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.surface,
-                  border: Border.all(color: AppColors.primary, width: 2),
-                  image: controller.profileImageUrl.value.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(controller.profileImageUrl.value),
-                          fit: BoxFit.cover,
+          () {
+            final hasLocalFile = controller.profileImage.value != null;
+            final hasUrl = controller.profileImageUrl.value.isNotEmpty;
+
+            ImageProvider? imageProvider;
+            if (hasLocalFile) {
+              imageProvider = FileImage(controller.profileImage.value!);
+            } else if (hasUrl) {
+              imageProvider = NetworkImage(controller.profileImageUrl.value);
+            }
+
+            return Stack(
+              children: [
+                Container(
+                  width: 100.w,
+                  height: 100.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.surface,
+                    border: Border.all(color: AppColors.primary, width: 2),
+                    image: imageProvider != null
+                        ? DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: (imageProvider == null)
+                      ? Icon(
+                          Icons.person_rounded,
+                          size: 50.sp,
+                          color: AppColors.textHint,
                         )
                       : null,
                 ),
-                child: controller.profileImageUrl.value.isEmpty
-                    ? Icon(
-                        Icons.person_rounded,
-                        size: 50.sp,
-                        color: AppColors.textHint,
-                      )
-                    : null,
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.camera_alt_rounded,
-                    size: 16.sp,
-                    color: Colors.white,
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.camera_alt_rounded,
+                      size: 16.sp,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
       ),
     );

@@ -34,16 +34,16 @@ class ConsultationListPage extends GetView<ConsultationController> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Consultations'),
+          title: Text('consultations'.tr),
           bottom: TabBar(
             onTap: (index) => controller.selectedTab.value = index,
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.primary,
-            tabs: const [
-              Tab(text: 'Pending'),
-              Tab(text: 'Active'),
-              Tab(text: 'Completed'),
+            tabs: [
+              Tab(text: 'pending'.tr),
+              Tab(text: 'online'.tr),
+              Tab(text: 'completed'.tr),
             ],
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../config/routes/app_routes.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -65,7 +66,7 @@ class AboutPage extends StatelessWidget {
                 size: 16.sp,
                 color: AppColors.textSecondary,
               ),
-              onTap: () {},
+              onTap: () => Get.toNamed(AppRoutes.terms),
             ),
             const Divider(),
             ListTile(
@@ -80,7 +81,7 @@ class AboutPage extends StatelessWidget {
                 size: 16.sp,
                 color: AppColors.textSecondary,
               ),
-              onTap: () {},
+              onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
             ),
             const Divider(),
             ListTile(

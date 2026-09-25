@@ -10,6 +10,7 @@ import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/snackbar_util.dart';
+import '../../../../core/utils/image_picker_util.dart';
 import '../../../../config/routes/app_routes.dart';
 import 'chat_inbox_controller.dart';
 
@@ -269,10 +270,12 @@ class PartnerChatController extends GetxController {
     _socket?.emit('send_message', payload);
   }
 
-  Future<void> pickAndSendImage(ImageSource source) async {
+  Future<void> pickAndSendImage([ImageSource? source]) async {
     try {
+      final selectedSource = source ?? await ImagePickerUtil.showImageSourceBottomSheet();
+      if (selectedSource == null) return;
       final XFile? file = await _picker.pickImage(
-        source: source,
+        source: selectedSource,
         imageQuality: 70,
       );
 

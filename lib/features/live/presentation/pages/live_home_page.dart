@@ -13,7 +13,7 @@ class LiveHomePage extends GetView<LiveController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Live'),
+        title: Text('live'.tr),
         actions: [
           IconButton(
             onPressed: () => controller.loadRequests(),

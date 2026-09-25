@@ -65,7 +65,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Puja Order Details'),
+        title: Text('puja_order_details'.tr),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
@@ -78,7 +78,6 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: AppColors.primary.withOpacity(0.15)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -86,14 +85,14 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Order ID', style: AppTextStyles.caption),
+                      Text('order_id'.tr, style: AppTextStyles.caption),
                       Text(orderId, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Status', style: AppTextStyles.caption),
+                      Text('status'.tr, style: AppTextStyles.caption),
                       Text(
                         status,
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -113,7 +112,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
             SizedBox(height: 20.h),
 
             // Puja & Package Info
-            Text('Puja Information', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+            Text('puja_info'.tr, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
             SizedBox(height: 8.h),
             Card(
               margin: EdgeInsets.zero,
@@ -129,7 +128,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                       Text(pujaDesc, style: AppTextStyles.bodySmall.copyWith(color: Colors.grey.shade600)),
                     ],
                     const Divider(),
-                    Text('Selected Package: $packageName', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                    Text('selected_package'.trParams({'package': packageName}), style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                     if (packageDesc.isNotEmpty) ...[
                       SizedBox(height: 4.h),
                       Text(packageDesc, style: AppTextStyles.bodySmall.copyWith(color: Colors.grey.shade600)),
@@ -138,7 +137,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total Amount Paid:', style: AppTextStyles.bodyMedium),
+                        Text('total_amount_paid'.tr, style: AppTextStyles.bodyMedium),
                         Text(
                           '₹$amount',
                           style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
@@ -152,7 +151,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
             SizedBox(height: 20.h),
 
             // Customer Details
-            Text('Customer Details', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+            Text('customer_details'.tr, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
             SizedBox(height: 8.h),
             Card(
               margin: EdgeInsets.zero,
@@ -162,10 +161,10 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _infoRow(Icons.person_outline, 'Name', customerName),
-                    _infoRow(Icons.phone_android_outlined, 'Phone', customerPhone),
+                    _infoRow(Icons.person_outline, 'full_name'.tr, customerName),
+                    _infoRow(Icons.phone_android_outlined, 'phone_number'.tr, customerPhone),
                     _infoRow(Icons.mode_of_travel_outlined, 'Puja Mode', mode),
-                    _infoRow(Icons.calendar_month_outlined, 'Booking Date', bookingDate),
+                    _infoRow(Icons.calendar_month_outlined, 'dob'.tr, bookingDate),
                   ],
                 ),
               ),
@@ -174,7 +173,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
 
             // Shipping Details (if offline)
             if (hasShipping) ...[
-              Text('Shipping Address (for Puja Prasad/Samagri)', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+              Text('shipping_address_prasad'.tr, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
               SizedBox(height: 8.h),
               Card(
                 margin: EdgeInsets.zero,
@@ -186,7 +185,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                     children: [
                       Text(shipping['name'] ?? '', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
                       SizedBox(height: 4.h),
-                      Text('Phone: ${shipping['phone'] ?? ''}', style: AppTextStyles.bodySmall),
+                      Text('${'phone_number'.tr}: ${shipping['phone'] ?? ''}', style: AppTextStyles.bodySmall),
                       SizedBox(height: 4.h),
                       Text(
                         '${shipping['flat_no'] ?? ''}, ${shipping['locality'] ?? ''}, ${shipping['landmark'] ?? ''}, ${shipping['city'] ?? ''}, ${shipping['state'] ?? ''} - ${shipping['pincode'] ?? ''}',
@@ -201,7 +200,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
 
             // Broadcast Link (For Online Pujas)
             if (isOnline) ...[
-              Text('Live Broadcast Link', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+              Text('live_broadcast_link'.tr, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
               SizedBox(height: 8.h),
               Card(
                 margin: EdgeInsets.zero,
@@ -248,7 +247,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                                     height: 20,
                                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                                   )
-                                : const Text('Save Link'),
+                                : Text('save_link'.tr),
                           ),
                         )),
                       ],
@@ -270,11 +269,11 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                       : () async {
                           final confirm = await Get.dialog<bool>(
                             AlertDialog(
-                              title: const Text('Complete Puja'),
-                              content: const Text('Are you sure you want to mark this puja order as Completed?'),
+                              title: Text('complete_puja'.tr),
+                              content: Text('complete_puja_confirm'.tr),
                               actions: [
-                                TextButton(onPressed: () => Get.back(result: false), child: const Text('Cancel')),
-                                ElevatedButton(onPressed: () => Get.back(result: true), child: const Text('Confirm')),
+                                TextButton(onPressed: () => Get.back(result: false), child: Text('cancel'.tr)),
+                                ElevatedButton(onPressed: () => Get.back(result: true), child: Text('submit'.tr)),
                               ],
                             ),
                           );
@@ -291,7 +290,7 @@ class _PujaOrderDetailPageState extends State<PujaOrderDetailPage> {
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
                   child: controller.isSubmitting.value
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Mark as Completed'),
+                      : Text('mark_as_completed'.tr),
                 ),
               )),
               SizedBox(height: 12.h),

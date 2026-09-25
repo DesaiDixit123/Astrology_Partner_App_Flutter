@@ -9,6 +9,7 @@ import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 import '../../../../config/routes/app_routes.dart';
 import '../controllers/home_controller.dart';
 import '../../../profile/presentation/widgets/boost_dialog.dart';
+import '../../../../core/localization/app_translations.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -368,7 +369,7 @@ class HomePage extends GetView<HomeController> {
           final dt = DateTime.tryParse(expiry.toString());
           if (dt != null) {
             final diff = dt.difference(DateTime.now()).inDays;
-            expiryText = diff > 0 ? '$diff days left' : 'Expired';
+            expiryText = diff > 0 ? 'days_left'.trParams({'days': '$diff'}) : 'expired'.tr;
           }
         }
       } catch (_) {}
@@ -400,7 +401,7 @@ class HomePage extends GetView<HomeController> {
                     Icon(Icons.stars_rounded, color: Colors.white, size: 20.sp),
                     SizedBox(width: 8.w),
                     Text(
-                      pkgName,
+                      pkgName.trPkg,
                       style: AppTextStyles.h4.copyWith(color: Colors.white),
                     ),
                   ],
@@ -411,7 +412,7 @@ class HomePage extends GetView<HomeController> {
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                         decoration: BoxDecoration(
-                          color: expiryText == 'Expired'
+                          color: expiryText == 'expired'.tr
                               ? Colors.redAccent.withValues(alpha: 0.3)
                               : Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8.r),
@@ -419,7 +420,7 @@ class HomePage extends GetView<HomeController> {
                         child: Text(
                           expiryText,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: expiryText == 'Expired' ? Colors.redAccent.shade100 : Colors.white,
+                            color: expiryText == 'expired'.tr ? Colors.redAccent.shade100 : Colors.white,
                             fontSize: 11.sp,
                           ),
                         ),
@@ -435,9 +436,9 @@ class HomePage extends GetView<HomeController> {
             if (callLimit > 0 || chatLimit > 0 || videoLimit > 0)
               Row(
                 children: [
-                  _buildMiniProgress('Voice Call', callsUsed, callLimit),
-                  _buildMiniProgress('Chat', chatUsed, chatLimit),
-                  _buildMiniProgress('Video Call', videoUsed, videoLimit),
+                  _buildMiniProgress('call'.tr, callsUsed, callLimit),
+                  _buildMiniProgress('chat'.tr, chatUsed, chatLimit),
+                  _buildMiniProgress('video_call'.tr, videoUsed, videoLimit),
                 ],
               ),
           ],

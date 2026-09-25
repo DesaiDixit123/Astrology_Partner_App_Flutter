@@ -20,6 +20,8 @@ import '../../features/live/presentation/pages/go_live_prep_page.dart';
 import '../../features/live/presentation/controllers/live_controller.dart';
 import '../../features/support/presentation/pages/help_support_page.dart';
 import '../../features/support/presentation/pages/about_page.dart';
+import '../../features/support/presentation/pages/privacy_policy_page.dart';
+import '../../features/support/presentation/pages/terms_page.dart';
 import '../../features/earnings/presentation/controllers/earnings_controller.dart';
 import '../../features/profile/presentation/controllers/profile_controller.dart';
 import '../../features/profile/presentation/controllers/boost_controller.dart';
@@ -293,6 +295,14 @@ class AppPages {
       binding: BindingsBuilder(() {
         Get.lazyPut<SubscriptionController>(() => SubscriptionController());
       }),
+    ),
+    GetPage(
+      name: AppRoutes.privacyPolicy,
+      page: () => const PrivacyPolicyPage(),
+    ),
+    GetPage(
+      name: AppRoutes.terms,
+      page: () => const TermsPage(),
     ),
   ];
 }

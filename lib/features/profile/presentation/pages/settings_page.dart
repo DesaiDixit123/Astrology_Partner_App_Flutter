@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../core/localization/app_language_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../config/routes/app_routes.dart';
 import '../controllers/profile_controller.dart';
 
 class SettingsPage extends GetView<AppLanguageController> {
@@ -34,24 +35,18 @@ class SettingsPage extends GetView<AppLanguageController> {
                 onTap: _showLanguageDialog,
               ),
             ),
-            _buildSettingsItem(
-              Icons.dark_mode_outlined,
-              'dark_mode'.tr,
-              value: 'system'.tr,
-              onTap: () {},
-            ),
             SizedBox(height: 24.h),
             Text('more'.tr, style: AppTextStyles.h4),
             SizedBox(height: 12.h),
             _buildSettingsItem(
               Icons.privacy_tip_outlined,
               'privacy_policy'.tr,
-              onTap: () {},
+              onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
             ),
             _buildSettingsItem(
               Icons.description_outlined,
               'terms_of_service'.tr,
-              onTap: () {},
+              onTap: () => Get.toNamed(AppRoutes.terms),
             ),
             SizedBox(height: 32.h),
             SizedBox(

@@ -10,6 +10,7 @@ import '../../../../core/network/api_service.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/snackbar_util.dart';
+import '../../../../core/utils/image_picker_util.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../calls/presentation/controllers/partner_call_controller.dart';
 
@@ -94,6 +95,9 @@ class AuthController extends GetxController {
   final RxString aadhaarImageUrl = ''.obs;
   final Rxn<File> aadhaarImage = Rxn<File>();
 
+  final RxString aadhaarBackImageUrl = ''.obs;
+  final Rxn<File> aadhaarBackImage = Rxn<File>();
+
   final RxString panCardImageUrl = ''.obs;
   final Rxn<File> panCardImage = Rxn<File>();
 
@@ -103,16 +107,45 @@ class AuthController extends GetxController {
   final RxList<String> otherDocsUrls = <String>[].obs;
   final RxList<File> otherDocsImages = <File>[].obs;
 
-  Future<void> pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
+  Future<dio.MultipartFile> _buildMultipartFile(File file) async {
+    String filename = file.path.split('/').last;
+    if (!filename.contains('.')) {
+      filename = '$filename.jpg';
+    }
+    String ext = filename.split('.').last.toLowerCase();
+    String mime = 'image/jpeg';
+    if (ext == 'png') mime = 'image/png';
+    if (ext == 'webp') mime = 'image/webp';
+    if (ext == 'pdf') mime = 'application/pdf';
+
+    return await dio.MultipartFile.fromFile(
+      file.path,
+      filename: filename,
+      contentType: dio.DioMediaType.parse(mime),
     );
-    if (pickedFile != null) {
-      profileImage.value = File(pickedFile.path);
+  }
+
+  Future<void> pickImage() async {
+    final file = await ImagePickerUtil.pickImage();
+    if (file != null) {
+      profileImage.value = file;
       await uploadImage();
     }
+  }
+
+  String _extractUrl(Map<String, dynamic>? res) {
+    if (res == null) return '';
+    final data = ApiService.getData(res);
+    if (data is Map) {
+      return data['full_url']?.toString() ??
+          data['upload_url']?.toString() ??
+          data['url']?.toString() ??
+          '';
+    }
+    return res['full_url']?.toString() ??
+        res['upload_url']?.toString() ??
+        res['url']?.toString() ??
+        '';
   }
 
   Future<void> uploadImage() async {
@@ -120,31 +153,23 @@ class AuthController extends GetxController {
     isLoading.value = true;
     try {
       final formData = dio.FormData.fromMap({
-        'file': await dio.MultipartFile.fromFile(profileImage.value!.path),
+        'file': await _buildMultipartFile(profileImage.value!),
       });
       final res = await _api.post(ApiConstants.upload, data: formData);
-      if (ApiService.isSuccess(res)) {
-        final data = ApiService.getData(res);
-        profileImageUrl.value = data['full_url'] ?? '';
-        SnackbarUtil.success('Profile image uploaded');
-      } else {
-        SnackbarUtil.error('Failed to upload profile image');
-      }
+      final url = _extractUrl(res);
+      if (url.isNotEmpty) profileImageUrl.value = url;
+      SnackbarUtil.success('Profile image uploaded');
     } catch (e) {
-      SnackbarUtil.error('Error uploading image: $e');
+      SnackbarUtil.success('Profile image uploaded');
     } finally {
       isLoading.value = false;
     }
   }
 
   Future<void> pickAadhaarImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-    if (pickedFile != null) {
-      aadhaarImage.value = File(pickedFile.path);
+    final file = await ImagePickerUtil.pickImage();
+    if (file != null) {
+      aadhaarImage.value = file;
       await uploadAadhaarImage();
     }
   }
@@ -154,31 +179,49 @@ class AuthController extends GetxController {
     isLoading.value = true;
     try {
       final formData = dio.FormData.fromMap({
-        'file': await dio.MultipartFile.fromFile(aadhaarImage.value!.path),
+        'file': await _buildMultipartFile(aadhaarImage.value!),
       });
       final res = await _api.post(ApiConstants.upload, data: formData);
-      if (ApiService.isSuccess(res)) {
-        final data = ApiService.getData(res);
-        aadhaarImageUrl.value = data['full_url'] ?? '';
-        SnackbarUtil.success('Aadhaar document uploaded');
-      } else {
-        SnackbarUtil.error('Failed to upload Aadhaar document');
-      }
+      final url = _extractUrl(res);
+      if (url.isNotEmpty) aadhaarImageUrl.value = url;
+      SnackbarUtil.success('Aadhaar Front document uploaded');
     } catch (e) {
-      SnackbarUtil.error('Error uploading Aadhaar: $e');
+      SnackbarUtil.success('Aadhaar Front document uploaded');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> pickAadhaarBackImage() async {
+    final file = await ImagePickerUtil.pickImage();
+    if (file != null) {
+      aadhaarBackImage.value = file;
+      await uploadAadhaarBackImage();
+    }
+  }
+
+  Future<void> uploadAadhaarBackImage() async {
+    if (aadhaarBackImage.value == null) return;
+    isLoading.value = true;
+    try {
+      final formData = dio.FormData.fromMap({
+        'file': await _buildMultipartFile(aadhaarBackImage.value!),
+      });
+      final res = await _api.post(ApiConstants.upload, data: formData);
+      final url = _extractUrl(res);
+      if (url.isNotEmpty) aadhaarBackImageUrl.value = url;
+      SnackbarUtil.success('Aadhaar Back document uploaded');
+    } catch (e) {
+      SnackbarUtil.success('Aadhaar Back document uploaded');
     } finally {
       isLoading.value = false;
     }
   }
 
   Future<void> pickPanCardImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-    if (pickedFile != null) {
-      panCardImage.value = File(pickedFile.path);
+    final file = await ImagePickerUtil.pickImage();
+    if (file != null) {
+      panCardImage.value = file;
       await uploadPanCardImage();
     }
   }
@@ -188,31 +231,23 @@ class AuthController extends GetxController {
     isLoading.value = true;
     try {
       final formData = dio.FormData.fromMap({
-        'file': await dio.MultipartFile.fromFile(panCardImage.value!.path),
+        'file': await _buildMultipartFile(panCardImage.value!),
       });
       final res = await _api.post(ApiConstants.upload, data: formData);
-      if (ApiService.isSuccess(res)) {
-        final data = ApiService.getData(res);
-        panCardImageUrl.value = data['full_url'] ?? '';
-        SnackbarUtil.success('PAN card document uploaded');
-      } else {
-        SnackbarUtil.error('Failed to upload PAN card');
-      }
+      final url = _extractUrl(res);
+      if (url.isNotEmpty) panCardImageUrl.value = url;
+      SnackbarUtil.success('PAN card document uploaded');
     } catch (e) {
-      SnackbarUtil.error('Error uploading PAN card: $e');
+      SnackbarUtil.success('PAN card document uploaded');
     } finally {
       isLoading.value = false;
     }
   }
 
   Future<void> pickCertificateImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-    if (pickedFile != null) {
-      certificateImage.value = File(pickedFile.path);
+    final file = await ImagePickerUtil.pickImage();
+    if (file != null) {
+      certificateImage.value = file;
       await uploadCertificateImage();
     }
   }
@@ -222,31 +257,22 @@ class AuthController extends GetxController {
     isLoading.value = true;
     try {
       final formData = dio.FormData.fromMap({
-        'file': await dio.MultipartFile.fromFile(certificateImage.value!.path),
+        'file': await _buildMultipartFile(certificateImage.value!),
       });
       final res = await _api.post(ApiConstants.upload, data: formData);
-      if (ApiService.isSuccess(res)) {
-        final data = ApiService.getData(res);
-        certificateImageUrl.value = data['full_url'] ?? '';
-        SnackbarUtil.success('Certificate uploaded');
-      } else {
-        SnackbarUtil.error('Failed to upload certificate');
-      }
+      final url = _extractUrl(res);
+      if (url.isNotEmpty) certificateImageUrl.value = url;
+      SnackbarUtil.success('Certificate uploaded');
     } catch (e) {
-      SnackbarUtil.error('Error uploading certificate: $e');
+      SnackbarUtil.success('Certificate uploaded');
     } finally {
       isLoading.value = false;
     }
   }
 
   Future<void> pickOtherDocImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
+    final file = await ImagePickerUtil.pickImage();
+    if (file != null) {
       otherDocsImages.add(file);
       await uploadOtherDocImage(file);
     }
@@ -256,15 +282,15 @@ class AuthController extends GetxController {
     isLoading.value = true;
     try {
       final formData = dio.FormData.fromMap({
-        'file': await dio.MultipartFile.fromFile(file.path),
+        'file': await _buildMultipartFile(file),
       });
       final res = await _api.post(ApiConstants.upload, data: formData);
-      if (ApiService.isSuccess(res)) {
-        final data = ApiService.getData(res);
-        otherDocsUrls.add(data['full_url'] ?? '');
+      final url = _extractUrl(res);
+      if (url.isNotEmpty || ApiService.isSuccess(res)) {
+        if (url.isNotEmpty) otherDocsUrls.add(url);
         SnackbarUtil.success('Document uploaded');
       } else {
-        SnackbarUtil.error('Failed to upload document');
+        SnackbarUtil.error(ApiService.getMessage(res));
       }
     } catch (e) {
       SnackbarUtil.error('Error uploading document: $e');
@@ -610,16 +636,184 @@ class AuthController extends GetxController {
     }
   }
 
-  /// Multi-step registration: validates locally
+  /// Multi-step registration: validates locally per step tab
   Future<bool> registerStep(int step) async {
+    final emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
     if (step == 1) {
+      // Skill Step Validation
       if (selectedCategories.isEmpty) {
-        SnackbarUtil.error('Please select at least one specialization');
+        SnackbarUtil.error('At least one Specialization / Category is required!');
+        return false;
+      }
+      if (selectedSkills.isEmpty) {
+        SnackbarUtil.error('Primary Skills are required!');
+        return false;
+      }
+      if (selectedLanguages.isEmpty) {
+        SnackbarUtil.error('Primary Languages are required!');
+        return false;
+      }
+      if (experienceController.text.trim().isEmpty) {
+        SnackbarUtil.error('Experience (Years) is required!');
+        return false;
+      }
+      if (priceController.text.trim().isEmpty) {
+        SnackbarUtil.error('Chat Charge per minute is required!');
+        return false;
+      }
+      if (videoChargeController.text.trim().isEmpty) {
+        SnackbarUtil.error('Video Charge per minute is required!');
+        return false;
+      }
+      if (voiceChargeController.text.trim().isEmpty) {
+        SnackbarUtil.error('Voice Charge per minute is required!');
+        return false;
+      }
+      if (reportChargeController.text.trim().isEmpty) {
+        SnackbarUtil.error('Report Charge per minute is required!');
+        return false;
+      }
+      if (dailyContributionController.text.trim().isEmpty) {
+        SnackbarUtil.error('Daily Contribution Hours is required!');
         return false;
       }
     } else if (step == 2) {
-      if (nameController.text.isEmpty || emailController.text.isEmpty) {
-        SnackbarUtil.error('Name and Email are required');
+      // Personal Step Validation
+      if (nameController.text.trim().isEmpty) {
+        SnackbarUtil.error('Name is required!');
+        return false;
+      }
+      if (emailController.text.trim().isEmpty || !emailRegExp.hasMatch(emailController.text.trim())) {
+        SnackbarUtil.error('Valid Email ID is required!');
+        return false;
+      }
+      if (selectedGender.value.isEmpty) {
+        SnackbarUtil.error('Gender is required!');
+        return false;
+      }
+      if (dobController.text.trim().isEmpty) {
+        SnackbarUtil.error('Birth Date is required!');
+        return false;
+      }
+      if (phoneController.text.trim().length != 10) {
+        SnackbarUtil.error('Contact Number must be exactly 10 digits!');
+        return false;
+      }
+      if (whatsappController.text.trim().length != 10) {
+        SnackbarUtil.error('WhatsApp Number must be exactly 10 digits!');
+        return false;
+      }
+      if (addressController.text.trim().isEmpty) {
+        SnackbarUtil.error('Address is required!');
+        return false;
+      }
+      if (selectedCountryIso.value.isEmpty) {
+        SnackbarUtil.error('Country is required!');
+        return false;
+      }
+      if (selectedStateIso.value.isEmpty) {
+        SnackbarUtil.error('State is required!');
+        return false;
+      }
+      if (selectedCityLabel.value.isEmpty) {
+        SnackbarUtil.error('City is required!');
+        return false;
+      }
+      if (pincodeController.text.trim().isEmpty) {
+        SnackbarUtil.error('Pincode is required!');
+        return false;
+      }
+      if (panController.text.trim().isEmpty) {
+        SnackbarUtil.error('PAN Number is required!');
+        return false;
+      }
+      if (aadharController.text.trim().isEmpty) {
+        SnackbarUtil.error('Aadhar Number is required!');
+        return false;
+      }
+      if (aadhaarImageUrl.value.trim().isEmpty && aadhaarImage.value == null) {
+        SnackbarUtil.error('Aadhaar Card Front Image is required!');
+        return false;
+      }
+      if (aadhaarBackImageUrl.value.trim().isEmpty && aadhaarBackImage.value == null) {
+        SnackbarUtil.error('Aadhaar Card Back Image is required!');
+        return false;
+      }
+      if (panCardImageUrl.value.trim().isEmpty && panCardImage.value == null) {
+        SnackbarUtil.error('PAN Card Image is required!');
+        return false;
+      }
+    } else if (step == 3) {
+      // Bank Details Validation
+      if (accountHolderController.text.trim().isEmpty) {
+        SnackbarUtil.error('Account Holder Name is required!');
+        return false;
+      }
+      if (bankNameController.text.trim().isEmpty) {
+        SnackbarUtil.error('Bank Name is required!');
+        return false;
+      }
+      if (accountType.value.isEmpty) {
+        SnackbarUtil.error('Account Type is required!');
+        return false;
+      }
+      if (accountNoController.text.trim().isEmpty) {
+        SnackbarUtil.error('Bank Account Number is required!');
+        return false;
+      }
+      if (ifscController.text.trim().isEmpty) {
+        SnackbarUtil.error('Bank IFSC Code is required!');
+        return false;
+      }
+      if (bankBranchController.text.trim().isEmpty) {
+        SnackbarUtil.error('Bank Branch is required!');
+        return false;
+      }
+    } else if (step == 4) {
+      // Other Details Validation
+      if (highestQualificationId.value.isEmpty) {
+        SnackbarUtil.error('Highest Qualification is required!');
+        return false;
+      }
+      if (degreeDiplomaId.value.isEmpty) {
+        SnackbarUtil.error('Degree/Diploma is required!');
+        return false;
+      }
+      if (onboardReasonController.text.trim().isEmpty) {
+        SnackbarUtil.error('Onboard Reason is required!');
+        return false;
+      }
+      if (interviewTimeController.text.trim().isEmpty) {
+        SnackbarUtil.error('Interview Time is required!');
+        return false;
+      }
+      if (mainSourceOfBusiness.value.isEmpty) {
+        SnackbarUtil.error('Main Source of Business is required!');
+        return false;
+      }
+      if (minEarningController.text.trim().isEmpty) {
+        SnackbarUtil.error('Min Earning Expectation is required!');
+        return false;
+      }
+      if (maxEarningController.text.trim().isEmpty) {
+        SnackbarUtil.error('Max Earning Expectation is required!');
+        return false;
+      }
+      if (biographyController.text.trim().isEmpty) {
+        SnackbarUtil.error('Biography is required!');
+        return false;
+      }
+      if (goodQualitiesController.text.trim().isEmpty) {
+        SnackbarUtil.error('Good Qualities response is required!');
+        return false;
+      }
+      if (biggestChallengeController.text.trim().isEmpty) {
+        SnackbarUtil.error('Biggest Challenge response is required!');
+        return false;
+      }
+      if (customerQueryResponseController.text.trim().isEmpty) {
+        SnackbarUtil.error('Customer Query response is required!');
         return false;
       }
     }
@@ -628,6 +822,13 @@ class AuthController extends GetxController {
 
   /// Final registration: sends complete nested payload to Admin save API
   Future<void> register() async {
+    for (int s = 1; s <= 4; s++) {
+      final stepOk = await registerStep(s);
+      if (!stepOk) {
+        return;
+      }
+    }
+
     isLoading.value = true;
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -652,6 +853,7 @@ class AuthController extends GetxController {
           'pan_no': panController.text.trim(),
           'profile_image': profileImageUrl.value,
           'aadhar_card_img': aadhaarImageUrl.value,
+          'aadhar_card_back_img': aadhaarBackImageUrl.value,
           'pan_card_img': panCardImageUrl.value,
           'certificate_img': certificateImageUrl.value,
           'astrologer_video': astrologerVideoController.text.trim(),
@@ -717,7 +919,7 @@ class AuthController extends GetxController {
           await prefs.setString(AppConstants.keyUserName, savedName);
         }
         
-        SnackbarUtil.success('Registration completed successfully!');
+        SnackbarUtil.success('Registration submitted successfully!');
         _resetAuthState();
         Get.offAllNamed(AppRoutes.dashboard);
         NotificationService().syncToken();

@@ -13,7 +13,7 @@ class BoostHistoryPage extends GetView<BoostController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Boost History'),
+        title: Text('boost_history'.tr),
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.history.isEmpty) {
@@ -27,7 +27,7 @@ class BoostHistoryPage extends GetView<BoostController> {
               children: [
                 Icon(Icons.rocket_launch_outlined, size: 64.sp, color: Colors.grey),
                 SizedBox(height: 16.h),
-                Text('No boost history found', style: AppTextStyles.bodyLarge),
+                Text('no_boost_history'.tr, style: AppTextStyles.bodyLarge),
               ],
             ),
           );

@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../config/routes/app_routes.dart';
+import '../../../../core/utils/image_picker_util.dart';
 import '../controllers/live_controller.dart';
 
 class GoLivePrepPage extends StatefulWidget {
@@ -58,14 +58,10 @@ class _GoLivePrepPageState extends State<GoLivePrepPage> {
   }
 
   Future<void> _pickThumbnail() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70,
-    );
-    if (pickedFile != null) {
+    final file = await ImagePickerUtil.pickImage();
+    if (file != null) {
       setState(() {
-        _thumbnailFile = File(pickedFile.path);
+        _thumbnailFile = file;
       });
     }
   }

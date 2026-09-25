@@ -5,6 +5,7 @@ import 'package:dio/dio.dart' as dio;
 import '../../../../core/network/api_service.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/utils/snackbar_util.dart';
+import '../../../../core/utils/image_picker_util.dart';
 
 class BlogController extends GetxController {
   final RxList blogs = [].obs;
@@ -32,9 +33,11 @@ class BlogController extends GetxController {
     }
   }
 
-  Future<void> pickThumbnail(ImageSource source) async {
+  Future<void> pickThumbnail([ImageSource? source]) async {
+    final selectedSource = source ?? await ImagePickerUtil.showImageSourceBottomSheet();
+    if (selectedSource == null) return;
     final XFile? image = await _picker.pickImage(
-      source: source,
+      source: selectedSource,
       imageQuality: 50,
     );
     if (image != null) {

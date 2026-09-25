@@ -15,7 +15,7 @@ class FollowersListPage extends GetView<ProfileController> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          'My Followers',
+          'my_followers'.tr,
           style: AppTextStyles.h3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -67,7 +67,7 @@ class FollowersListPage extends GetView<ProfileController> {
                         ),
                       ),
                       Text(
-                        'Total Followers',
+                        'total_followers'.tr,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: Colors.white.withValues(alpha: 0.85),
                         ),
@@ -90,12 +90,12 @@ class FollowersListPage extends GetView<ProfileController> {
                         ),
                         SizedBox(height: 16.h),
                         Text(
-                          'No Followers Yet',
+                          'no_followers_yet'.tr,
                           style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
                         ),
                         SizedBox(height: 6.h),
                         Text(
-                          'Users who follow you will appear here.',
+                          'users_who_follow_you'.tr,
                           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
                         ),
                       ],

@@ -39,6 +39,8 @@ class AppRoutes {
   // Support
   static const String help = '/help';
   static const String about = '/about';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String terms = '/terms';
 
   // Blogs
   static const String blogs = '/blogs';

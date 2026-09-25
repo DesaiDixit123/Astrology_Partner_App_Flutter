@@ -101,10 +101,15 @@ class EditProfilePage extends GetView<ProfileController> {
                       ),
                     ),
                     SizedBox(height: 32.h),
+                    SizedBox(height: 24.h),
+                    // 1. Personal Information Card
                     PremiumCard(
                       padding: EdgeInsets.all(16.w),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          _buildCardTitle('Personal Details', Icons.person_rounded),
+                          SizedBox(height: 16.h),
                           CustomTextField(
                             controller: controller.nameController,
                             hintText: 'enter_name'.tr,
@@ -120,24 +125,37 @@ class EditProfilePage extends GetView<ProfileController> {
                             keyboardType: TextInputType.emailAddress,
                           ),
                           SizedBox(height: 16.h),
+                          CustomTextField(
+                            controller: controller.phoneController,
+                            hintText: 'phone'.tr,
+                            labelText: 'phone'.tr,
+                            prefixIcon: Icons.phone_android_rounded,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          SizedBox(height: 16.h),
+                          CustomTextField(
+                            controller: controller.whatsappController,
+                            hintText: 'WhatsApp / Alternate Phone',
+                            labelText: 'WhatsApp / Alternate Phone',
+                            prefixIcon: Icons.chat_rounded,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          SizedBox(height: 16.h),
                           Row(
                             children: [
                               Expanded(
                                 child: CustomTextField(
-                                  controller: controller.experienceController,
-                                  hintText: 'exp_years'.tr,
-                                  labelText: 'exp_years'.tr,
-                                  prefixIcon: Icons.work_history_outlined,
-                                  keyboardType: TextInputType.number,
+                                  controller: controller.dobController,
+                                  hintText: 'YYYY-MM-DD',
+                                  labelText: 'Date of Birth',
+                                  prefixIcon: Icons.calendar_today_rounded,
                                 ),
                               ),
                               SizedBox(width: 12.w),
                               Expanded(
                                 child: Container(
                                   height: 56.h,
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w,
-                                  ),
+                                  padding: EdgeInsets.symmetric(horizontal: 12.w),
                                   decoration: BoxDecoration(
                                     color: AppColors.surface,
                                     border: Border.all(color: AppColors.border),
@@ -146,41 +164,16 @@ class EditProfilePage extends GetView<ProfileController> {
                                   child: Obx(
                                     () => DropdownButtonHideUnderline(
                                       child: DropdownButton<String>(
-                                        value:
-                                            [
-                                              'male',
-                                              'female',
-                                              'other',
-                                            ].contains(
-                                              controller.selectedGender.value
-                                                  .toLowerCase(),
-                                            )
-                                            ? controller.selectedGender.value
-                                                  .toLowerCase()
+                                        value: ['male', 'female', 'other'].contains(controller.selectedGender.value.toLowerCase())
+                                            ? controller.selectedGender.value.toLowerCase()
                                             : null,
-                                        hint: Text(
-                                          'gender'.tr,
-                                          style: AppTextStyles.hint,
-                                        ),
+                                        hint: Text('gender'.tr, style: AppTextStyles.hint),
                                         isExpanded: true,
-                                        icon: Icon(
-                                          Icons.keyboard_arrow_down_rounded,
-                                          color: AppColors.textSecondary,
-                                        ),
+                                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
                                         items: ['male', 'female', 'other']
-                                            .map(
-                                              (e) => DropdownMenuItem(
-                                                value: e,
-                                                child: Text(
-                                                  e.tr,
-                                                  style:
-                                                      AppTextStyles.bodyMedium,
-                                                ),
-                                              ),
-                                            )
+                                            .map((e) => DropdownMenuItem(value: e, child: Text(e.tr, style: AppTextStyles.bodyMedium)))
                                             .toList(),
-                                        onChanged: (v) =>
-                                            controller.setGender(v ?? ''),
+                                        onChanged: (v) => controller.setGender(v ?? ''),
                                       ),
                                     ),
                                   ),
@@ -188,38 +181,88 @@ class EditProfilePage extends GetView<ProfileController> {
                               ),
                             ],
                           ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // 2. Address Details Card
+                    PremiumCard(
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCardTitle('Address & Location', Icons.location_on_rounded),
                           SizedBox(height: 16.h),
                           CustomTextField(
-                            controller: controller.biographyController,
-                            hintText: 'expertise_hint'.tr,
-                            labelText: 'short_bio'.tr,
-                            prefixIcon: Icons.info_outline_rounded,
-                            maxLines: 3,
+                            controller: controller.addressController,
+                            hintText: 'Full Address',
+                            labelText: 'Address',
+                            prefixIcon: Icons.home_work_outlined,
                           ),
                           SizedBox(height: 16.h),
-                          CustomTextField(
-                            controller: controller.cityController,
-                            hintText: 'city'.tr,
-                            labelText: 'city'.tr,
-                            prefixIcon: Icons.location_city_rounded,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.cityController,
+                                  hintText: 'City',
+                                  labelText: 'City',
+                                  prefixIcon: Icons.location_city_rounded,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.stateController,
+                                  hintText: 'State',
+                                  labelText: 'State',
+                                  prefixIcon: Icons.map_outlined,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.countryController,
+                                  hintText: 'Country',
+                                  labelText: 'Country',
+                                  prefixIcon: Icons.flag_outlined,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.pincodeController,
+                                  hintText: 'Pincode',
+                                  labelText: 'Pincode',
+                                  prefixIcon: Icons.pin_drop_outlined,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 20.h),
+
+                    // 3. Skills & Biography Card
                     Obx(
                       () => PremiumCard(
                         padding: EdgeInsets.all(16.w),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            _buildCardTitle('Skills & Specialization', Icons.auto_awesome_rounded),
+                            SizedBox(height: 16.h),
                             _buildMultiSelectDropdown(
                               label: 'languages'.tr,
                               selectedItems: controller.allLanguages
-                                  .where(
-                                    (l) => controller.selectedLanguages
-                                        .contains(l['_id']),
-                                  )
+                                  .where((l) => controller.selectedLanguages.contains(l['_id']))
                                   .map((l) => l['name'].toString())
                                   .toList(),
                               onTap: () => _showMultiSelectBottomSheet(
@@ -229,15 +272,11 @@ class EditProfilePage extends GetView<ProfileController> {
                                 (val) => controller.toggleLanguage(val),
                               ),
                             ),
-                            SizedBox(height: 20.h),
+                            SizedBox(height: 16.h),
                             _buildMultiSelectDropdown(
                               label: 'skills'.tr,
                               selectedItems: controller.allSkills
-                                  .where(
-                                    (s) => controller.selectedSkills.contains(
-                                      s['_id'],
-                                    ),
-                                  )
+                                  .where((s) => controller.selectedSkills.contains(s['_id']))
                                   .map((s) => s['name'].toString())
                                   .toList(),
                               onTap: () => _showMultiSelectBottomSheet(
@@ -247,14 +286,11 @@ class EditProfilePage extends GetView<ProfileController> {
                                 (val) => controller.toggleSkill(val),
                               ),
                             ),
-                            SizedBox(height: 20.h),
+                            SizedBox(height: 16.h),
                             _buildMultiSelectDropdown(
                               label: 'categories'.tr,
                               selectedItems: controller.allCategories
-                                  .where(
-                                    (c) => controller.selectedCategories
-                                        .contains(c['_id']),
-                                  )
+                                  .where((c) => controller.selectedCategories.contains(c['_id']))
                                   .map((c) => c['name'].toString())
                                   .toList(),
                               onTap: () => _showMultiSelectBottomSheet(
@@ -264,11 +300,193 @@ class EditProfilePage extends GetView<ProfileController> {
                                 (val) => controller.toggleCategory(val),
                               ),
                             ),
+                            SizedBox(height: 16.h),
+                            CustomTextField(
+                              controller: controller.experienceController,
+                              hintText: 'exp_years'.tr,
+                              labelText: 'Experience (Years)',
+                              prefixIcon: Icons.work_history_outlined,
+                              keyboardType: TextInputType.number,
+                            ),
+                            SizedBox(height: 16.h),
+                            CustomTextField(
+                              controller: controller.biographyController,
+                              hintText: 'Bio / About your astrology background...',
+                              labelText: 'Biography / About Me',
+                              prefixIcon: Icons.info_outline_rounded,
+                              maxLines: 4,
+                            ),
                           ],
                         ),
                       ),
                     ),
+                    SizedBox(height: 20.h),
+
+                    // 4. Consultation Charges Card
+                    PremiumCard(
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCardTitle('Consultation Charges & Availability', Icons.monetization_on_rounded),
+                          SizedBox(height: 16.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.chatChargeController,
+                                  hintText: 'Chat Fee (₹/min)',
+                                  labelText: 'Chat Fee (₹/min)',
+                                  prefixIcon: Icons.chat_bubble_outline_rounded,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.voiceChargeController,
+                                  hintText: 'Voice Fee (₹/min)',
+                                  labelText: 'Voice Fee (₹/min)',
+                                  prefixIcon: Icons.phone_outlined,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.videoChargeController,
+                                  hintText: 'Video Fee (₹/min)',
+                                  labelText: 'Video Fee (₹/min)',
+                                  prefixIcon: Icons.videocam_outlined,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.reportChargeController,
+                                  hintText: 'Report Fee (₹)',
+                                  labelText: 'Report Fee (₹)',
+                                  prefixIcon: Icons.assignment_outlined,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+                          CustomTextField(
+                            controller: controller.dailyContributionController,
+                            hintText: 'Daily Available Hours (e.g. 4-6)',
+                            labelText: 'Daily Contribution Hours',
+                            prefixIcon: Icons.access_time_rounded,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // 5. Educational Details Card
+                    PremiumCard(
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCardTitle('Education & Qualifications', Icons.school_rounded),
+                          SizedBox(height: 16.h),
+                          CustomTextField(
+                            controller: controller.collegeController,
+                            hintText: 'College / School / Institute Name',
+                            labelText: 'College / Institute Name',
+                            prefixIcon: Icons.account_balance_outlined,
+                          ),
+                          SizedBox(height: 16.h),
+                          CustomTextField(
+                            controller: controller.learnAstrologyFromController,
+                            hintText: 'Where did you learn astrology?',
+                            labelText: 'Learned Astrology From',
+                            prefixIcon: Icons.menu_book_rounded,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // 6. Bank & Document Verification Card
+                    PremiumCard(
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCardTitle('Bank & Payout Details', Icons.account_balance_wallet_rounded),
+                          SizedBox(height: 16.h),
+                          CustomTextField(
+                            controller: controller.accountHolderController,
+                            hintText: 'Account Holder Name',
+                            labelText: 'Account Holder Name',
+                            prefixIcon: Icons.badge_outlined,
+                          ),
+                          SizedBox(height: 16.h),
+                          CustomTextField(
+                            controller: controller.bankAccountController,
+                            hintText: 'Bank Account Number',
+                            labelText: 'Bank Account Number',
+                            prefixIcon: Icons.credit_card_rounded,
+                            keyboardType: TextInputType.number,
+                          ),
+                          SizedBox(height: 16.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.ifscController,
+                                  hintText: 'IFSC Code',
+                                  labelText: 'IFSC Code',
+                                  prefixIcon: Icons.code_rounded,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.upiController,
+                                  hintText: 'UPI ID',
+                                  labelText: 'UPI ID',
+                                  prefixIcon: Icons.qr_code_2_rounded,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.panController,
+                                  hintText: 'PAN Number',
+                                  labelText: 'PAN Card No.',
+                                  prefixIcon: Icons.subtitles_outlined,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.aadharController,
+                                  hintText: 'Aadhar Number',
+                                  labelText: 'Aadhar Card No.',
+                                  prefixIcon: Icons.fingerprint_rounded,
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                     SizedBox(height: 32.h),
+
                     CustomButton(
                       text: 'save_changes'.tr,
                       onPressed: controller.updateProfile,
@@ -278,6 +496,22 @@ class EditProfilePage extends GetView<ProfileController> {
                 ),
               ),
       ),
+    );
+  }
+
+  Widget _buildCardTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 20.sp, color: AppColors.primary),
+        SizedBox(width: 8.w),
+        Text(
+          title,
+          style: AppTextStyles.h4.copyWith(
+            fontSize: 16.sp,
+            color: AppColors.primary,
+          ),
+        ),
+      ],
     );
   }
 

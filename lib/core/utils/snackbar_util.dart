@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../theme/app_colors.dart';
 
 enum SnackbarType { success, error, warning, info }
@@ -11,34 +11,22 @@ class SnackbarUtil {
     String? title,
     Duration duration = const Duration(seconds: 3),
   }) {
+    if (message.trim().isEmpty) return;
     final config = _getConfig(type);
 
-    Get.snackbar(
-      title ?? config.title,
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: config.backgroundColor,
-      colorText: Colors.white,
-      icon: Icon(config.icon, color: Colors.white, size: 28),
-      borderRadius: 12,
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      duration: duration,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-      forwardAnimationCurve: Curves.easeOutBack,
-      boxShadows: [
-        BoxShadow(
-          color: config.backgroundColor.withOpacity(0.3),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
-      mainButton: TextButton(
-        onPressed: () => Get.back(),
-        child: const Icon(Icons.close, color: Colors.white, size: 20),
-      ),
-    );
+    // Cancel any active toast and display ONLY ONE single clean toast
+    try {
+      Fluttertoast.cancel();
+      Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 3,
+        backgroundColor: config.backgroundColor,
+        textColor: Colors.white,
+        fontSize: 14.0,
+      );
+    } catch (_) {}
   }
 
   static void success(String message, {String? title}) {
