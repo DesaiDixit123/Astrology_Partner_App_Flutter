@@ -1,12 +1,12 @@
 class AppConstants {
   // App Info
   static const String appName = 'Vedikvani Partner';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.2.1';
+  static const String androidPackageName = 'com.vadikvanipartner';
 
   // API Configuration
-  //static const String baseUrl = 'http://192.168.1.10:3050';
-  //static String baseUrl = 'http://192.168.1.6:3050';
   static const String baseUrl = 'https://api.vedikvani.com/';
+  // static const String baseUrl = 'http://192.168.29.74:3050/';
 
   static const int connectionTimeout = 30000;
   static const int receiveTimeout = 30000;
