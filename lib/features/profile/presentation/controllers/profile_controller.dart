@@ -225,7 +225,12 @@ class ProfileController extends GetxController {
   }
 
   String get profileImageUrl {
-    final value = profile['profile_pic'] ?? profile['profilePic'] ?? '';
+    final personal = profile['personal_details'];
+    final personalPic = (personal is Map ? personal['profile_image'] : null)?.toString().trim();
+    if (personalPic != null && personalPic.isNotEmpty) {
+      return ApiConstants.resolveImage(personalPic);
+    }
+    final value = profile['profile_pic'] ?? profile['profilePic'] ?? profile['profile_image'] ?? '';
     return ApiConstants.resolveImage(value.toString());
   }
 
@@ -235,14 +240,26 @@ class ProfileController extends GetxController {
       queryParameters: {'page': 1, 'limit': 20},
     );
     if (ApiService.isSuccess(res)) {
-      reviews.value = List.from(ApiService.getData(res)?['docs'] ?? []);
+      final data = ApiService.getData(res);
+      reviews.value = List.from(data?['docs'] ?? []);
+      if (data is Map && data['averageRating'] != null) {
+        reviewsSummary.value = {
+          'averageRating': data['averageRating'],
+          'totalReviews': data['totalReviews'] ?? reviews.length,
+          'rating': data['rating'] ?? data['averageRating'],
+          'total_reviews': data['total_reviews'] ?? reviews.length,
+        };
+      }
     }
   }
 
   Future<void> _fetchReviewsSummary() async {
     final res = await _api.get(ApiConstants.reviewsSummary);
     if (ApiService.isSuccess(res)) {
-      reviewsSummary.value = ApiService.getData(res) ?? {};
+      final data = ApiService.getData(res);
+      if (data is Map) {
+        reviewsSummary.value = Map<String, dynamic>.from(data);
+      }
     }
   }
 
@@ -336,6 +353,7 @@ class ProfileController extends GetxController {
       );
       SnackbarUtil.success('Profile updated.');
       await _fetchProfile();
+      Get.back();
     } else {
       SnackbarUtil.error(ApiService.getMessage(res));
     }
@@ -355,14 +373,18 @@ class ProfileController extends GetxController {
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppConstants.keyIsLoggedIn, false);
+    await prefs.setBool(AppConstants.keyProfileComplete, false);
     await prefs.remove(AppConstants.keyToken);
     await prefs.remove(AppConstants.keyUserId);
     await prefs.remove(AppConstants.keyUserName);
     await prefs.remove(AppConstants.keyUserData);
     await prefs.remove(AppConstants.keyApprovalStatus);
     await prefs.remove(AppConstants.keyApprovalRejectionReason);
-    await prefs.setBool(AppConstants.keyIsLoggedIn, false);
-    await prefs.setBool(AppConstants.keyProfileComplete, false);
+
+    // Clean up all controllers and socket listeners cleanly
+    Get.deleteAll(force: true);
+
     Get.offAllNamed(AppRoutes.login);
   }
 

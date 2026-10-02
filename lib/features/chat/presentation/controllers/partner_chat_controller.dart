@@ -72,33 +72,55 @@ class PartnerChatController extends GetxController {
 
   @override
   void onClose() {
-    if (!isReadOnly.value && !isEnded.value && currentSession['_id'] != null) {
-      _socket?.emit('end_chat', {'session_id': currentSession['_id']});
-    }
     _durationTimer?.cancel();
     _typingDebounce?.cancel();
     scrollController.dispose();
     msgController.dispose();
     _socket?.disconnect();
+    _socket?.dispose();
     super.onClose();
   }
 
-
   void _initSocket() {
-    _socket = IO.io(ApiConstants.baseUrl, IO.OptionBuilder()
-      .setTransports(['websocket'])
-      .build());
+    _socket = IO.io(
+      ApiConstants.baseUrl,
+      IO.OptionBuilder()
+        .setTransports(['websocket'])
+        .enableForceNew()
+        .disableAutoConnect()
+        .enableReconnection()
+        .setReconnectionAttempts(9999)
+        .setReconnectionDelay(1000)
+        .build(),
+    );
 
-    _socket?.onConnect((_) {
-      print('Partner Chat: Connected to Socket.io');
-      if (currentSession['_id'] != null) {
-        _joinRoom(currentSession['_id']);
+    void onConnectOrReconnect() {
+      debugPrint('Partner Chat: Connected/Reconnected to Socket.io');
+      if (_astrologerId.isNotEmpty) {
+        _socket?.emit('register_astrologer', _astrologerId);
       }
+      final sid = currentSession['_id']?.toString();
+      if (sid != null && sid.isNotEmpty) {
+        _joinRoom(sid);
+        _syncMessagesSilently();
+      }
+    }
+
+    _socket?.onConnect((_) => onConnectOrReconnect());
+    _socket?.onReconnect((_) => onConnectOrReconnect());
+    _socket?.on('reconnect', (_) => onConnectOrReconnect());
+
+    _socket?.onDisconnect((_) {
+      debugPrint('Partner Chat: Disconnected from Socket.io');
     });
 
     // Listen for all incoming chat/call/video events
     _socket?.on('receive_message', (data) {
       if (data is Map) {
+        final id = data['_id']?.toString();
+        if (id != null && messages.any((m) => m['_id']?.toString() == id)) {
+          return;
+        }
         messages.add(data);
         _scrollToBottom();
       }
@@ -118,7 +140,7 @@ class PartnerChatController extends GetxController {
     });
 
     _socket?.on('partner_joined', (data) {
-      print('Partner joined the chat room (session became active)');
+      debugPrint('Partner joined the chat room (session became active)');
       _startTimer();
     });
 
@@ -133,18 +155,24 @@ class PartnerChatController extends GetxController {
       }
     });
 
-    // Add listeners for call/video events as needed
-    // _socket?.on('call_request', ...);
-    // _socket?.on('video_call_request', ...);
+    _socket?.connect();
+
+    final sid = currentSession['_id']?.toString();
+    if (sid != null && sid.isNotEmpty && _socket?.connected == true) {
+      _joinRoom(sid);
+    }
   }
 
   void _joinRoom(String sessionId) {
+    if (sessionId.isEmpty) return;
+    final custId = customer['_id']?.toString() ?? currentSession['customer_id']?.toString() ?? '';
     _socket?.emit('join_chat', {
       'session_id': sessionId,
-      'customer_id': customer['_id'],
+      'customer_id': custId,
       'astrologer_id': _astrologerId,
       'participant_type': 'astrologer',
     });
+    debugPrint('PartnerChatController: Emitted join_chat for session $sessionId');
   }
 
   void onMessageChanged(String text) {
@@ -169,13 +197,16 @@ class PartnerChatController extends GetxController {
     isLoading.value = false;
 
     if (ApiService.isSuccess(res) && res != null) {
-      final data = res['Data'];
+      final data = ApiService.getData(res);
       
       // Try to get status from primary response
       String? status;
       if (data is Map && data['session'] != null) {
         status = data['session']['status']?.toString().toLowerCase();
         currentSession.value = Map<String, dynamic>.from(data['session']);
+        if ((customer.isEmpty || customer['name'] == null) && data['session']['customer_id'] is Map) {
+          customer.value = Map<String, dynamic>.from(data['session']['customer_id']);
+        }
       }
 
       // Fallback: Check global inbox sessions if status is missing or looks suspicious
@@ -207,7 +238,15 @@ class PartnerChatController extends GetxController {
         } catch (_) {}
       }
 
-      messages.value = List.from(data is List ? data : (data['messages'] ?? []));
+      if (data is Map) {
+        final rawMessages = data['messages'];
+        if (rawMessages is List) {
+          messages.value = List.from(rawMessages);
+        }
+      } else if (data is List) {
+        messages.value = List.from(data);
+      }
+      
       if (!isReadOnly.value) {
         _joinRoom(sessionId);
         if (status == 'connected') {
@@ -246,20 +285,66 @@ class PartnerChatController extends GetxController {
 
   void _startTimer() {
     _durationTimer?.cancel();
-    // In a real app, we should calculate the elapsed time from startTime
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       chatDuration.value++;
+      // Every 3 seconds, silently fetch latest messages to ensure no dropped messages
+      if (chatDuration.value % 3 == 0) {
+        _syncMessagesSilently();
+      }
     });
+  }
+
+  bool _isSyncing = false;
+  Future<void> _syncMessagesSilently() async {
+    final sid = currentSession['_id']?.toString();
+    if (sid == null || sid.isEmpty || _isSyncing || isEnded.value) return;
+    _isSyncing = true;
+    try {
+      final res = await _api.get('/partner/chat/messages/$sid');
+      if (ApiService.isSuccess(res) && res != null) {
+        final data = ApiService.getData(res);
+        List? rawList;
+        if (data is Map && data['messages'] is List) {
+          rawList = data['messages'] as List;
+        } else if (data is List) {
+          rawList = data;
+        }
+        if (rawList != null && rawList.isNotEmpty) {
+          bool added = false;
+          for (final msg in rawList) {
+            if (msg is Map) {
+              final id = msg['_id']?.toString();
+              if (id != null && !messages.any((m) => m['_id']?.toString() == id)) {
+                messages.add(msg);
+                added = true;
+              }
+            }
+          }
+          if (added) {
+            _scrollToBottom();
+          }
+        }
+      }
+    } catch (_) {} finally {
+      _isSyncing = false;
+    }
   }
 
   Future<void> sendMessage(String text, {String? image, String messageType = 'text'}) async {
     if (isEnded.value) return;
     if (messageType == 'text' && text.trim().isEmpty) return;
 
-    // ✅ FIXED: Do NOT re-emit join_chat on every sendMessage — already joined at session start
+    if (_socket == null || _socket?.connected != true) {
+      _initSocket();
+    }
+
+    final sid = currentSession['_id']?.toString();
+    if (sid != null && sid.isNotEmpty) {
+      _joinRoom(sid);
+    }
 
     final payload = {
-      'session_id': currentSession['_id'],
+      'session_id': sid,
       'sender_id': _astrologerId,
       'sender_type': 'astrologer',
       'text': text.trim(),
@@ -299,9 +384,9 @@ class PartnerChatController extends GetxController {
 
       if (ApiService.isSuccess(res)) {
         final data = ApiService.getData(res);
-        final imageUrl = data['full_url'] ?? '';
+        final imageUrl = (data is Map) ? (data['full_url'] ?? data['url'] ?? data['upload_url'] ?? '') : '';
         if (imageUrl.isNotEmpty) {
-          await sendMessage('', image: imageUrl, messageType: 'image');
+          await sendMessage('', image: imageUrl.toString(), messageType: 'image');
         }
       } else {
         SnackbarUtil.error(ApiService.getMessage(res));

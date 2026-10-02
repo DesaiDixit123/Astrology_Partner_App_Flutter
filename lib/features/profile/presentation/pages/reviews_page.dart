@@ -25,9 +25,28 @@ class ReviewsPage extends GetView<ProfileController> {
         }
 
         final summary = controller.reviewsSummary;
-        final rating = summary['averageRating']?.toString() ?? '0.0';
-        final totalReviews = summary['totalReviews']?.toString() ?? '0';
         final reviews = controller.reviews;
+
+        double avgRating = 0.0;
+        int count = 0;
+
+        if (summary['averageRating'] != null && (double.tryParse(summary['averageRating'].toString()) ?? 0) > 0) {
+          avgRating = double.tryParse(summary['averageRating'].toString()) ?? 0.0;
+          count = int.tryParse(summary['totalReviews']?.toString() ?? '0') ?? reviews.length;
+        } else if (summary['rating'] != null && (double.tryParse(summary['rating'].toString()) ?? 0) > 0) {
+          avgRating = double.tryParse(summary['rating'].toString()) ?? 0.0;
+          count = int.tryParse(summary['total_reviews']?.toString() ?? '0') ?? reviews.length;
+        } else if (reviews.isNotEmpty) {
+          count = reviews.length;
+          final totalScore = reviews.fold<double>(0.0, (sum, r) => sum + ((r['rating'] as num?)?.toDouble() ?? 0.0));
+          avgRating = count > 0 ? (totalScore / count) : 0.0;
+        } else if (controller.userData['rating'] != null && (double.tryParse(controller.userData['rating'].toString()) ?? 0) > 0) {
+          avgRating = double.tryParse(controller.userData['rating'].toString()) ?? 0.0;
+          count = int.tryParse(controller.userData['total_reviews']?.toString() ?? '0') ?? 0;
+        }
+
+        final ratingStr = avgRating.toStringAsFixed(1);
+        final totalReviews = count.toString();
 
         return RefreshIndicator(
           onRefresh: () => controller.loadProfile(),
@@ -39,7 +58,7 @@ class ReviewsPage extends GetView<ProfileController> {
                   child: Column(
                     children: [
                       Text(
-                        rating,
+                        ratingStr,
                         style: TextStyle(
                           fontSize: 48.sp,
                           fontWeight: FontWeight.bold,
@@ -51,14 +70,13 @@ class ReviewsPage extends GetView<ProfileController> {
                         children: List.generate(
                           5,
                           (index) {
-                            double starRating = double.tryParse(rating) ?? 0;
-                            return Icon(
-                              index < starRating.floor()
-                                  ? Icons.star
-                                  : (index < starRating ? Icons.star_half : Icons.star_border),
-                              color: Colors.amber,
-                              size: 24.sp,
-                            );
+                            if (index < avgRating.floor()) {
+                              return Icon(Icons.star, color: Colors.amber, size: 28.sp);
+                            } else if (index < avgRating && (avgRating - index) >= 0.3) {
+                              return Icon(Icons.star_half, color: Colors.amber, size: 28.sp);
+                            } else {
+                              return Icon(Icons.star_border, color: Colors.amber, size: 28.sp);
+                            }
                           },
                         ),
                       ),

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
+import 'package:astrology_partner/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'followers_list_page.dart';
 
 class ProfilePage extends GetView<ProfileController> {
@@ -198,12 +199,22 @@ class ProfilePage extends GetView<ProfileController> {
         _buildMenuItem(
           Icons.stars_rounded,
           'my_subscription',
-          () => Get.toNamed(AppRoutes.subscription),
+          () async {
+            await Get.toNamed(AppRoutes.subscription);
+            if (Get.isRegistered<DashboardController>()) {
+              Get.find<DashboardController>().loadDashboard();
+            }
+          },
         ),
         _buildMenuItem(
           Icons.brightness_7_rounded,
           'puja_orders',
           () => Get.toNamed(AppRoutes.pujaOrders),
+        ),
+        _buildMenuItem(
+          Icons.help_outline_rounded,
+          'help_support',
+          () => Get.toNamed(AppRoutes.help),
         ),
         _buildMenuItem(
           Icons.logout_rounded,

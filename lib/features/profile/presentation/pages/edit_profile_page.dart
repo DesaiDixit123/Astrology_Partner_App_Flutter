@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../shared/widgets/custom_button.dart';
+import '../../../../shared/widgets/custom_dropdown_field.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../controllers/profile_controller.dart';
 
@@ -142,6 +143,7 @@ class EditProfilePage extends GetView<ProfileController> {
                           ),
                           SizedBox(height: 16.h),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 child: CustomTextField(
@@ -153,29 +155,20 @@ class EditProfilePage extends GetView<ProfileController> {
                               ),
                               SizedBox(width: 12.w),
                               Expanded(
-                                child: Container(
-                                  height: 56.h,
-                                  padding: EdgeInsets.symmetric(horizontal: 12.w),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.surface,
-                                    border: Border.all(color: AppColors.border),
-                                    borderRadius: BorderRadius.circular(16.r),
-                                  ),
-                                  child: Obx(
-                                    () => DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: ['male', 'female', 'other'].contains(controller.selectedGender.value.toLowerCase())
-                                            ? controller.selectedGender.value.toLowerCase()
-                                            : null,
-                                        hint: Text('gender'.tr, style: AppTextStyles.hint),
-                                        isExpanded: true,
-                                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
-                                        items: ['male', 'female', 'other']
-                                            .map((e) => DropdownMenuItem(value: e, child: Text(e.tr, style: AppTextStyles.bodyMedium)))
-                                            .toList(),
-                                        onChanged: (v) => controller.setGender(v ?? ''),
-                                      ),
-                                    ),
+                                child: Obx(
+                                  () => CustomDropdownField<String>(
+                                    labelText: 'gender'.tr,
+                                    hintText: 'select'.tr,
+                                    value: ['male', 'female', 'other'].contains(controller.selectedGender.value.toLowerCase())
+                                        ? controller.selectedGender.value.toLowerCase()
+                                        : null,
+                                    items: ['male', 'female', 'other']
+                                        .map((e) => DropdownMenuItem(
+                                              value: e,
+                                              child: Text(e.tr, style: AppTextStyles.bodyMedium),
+                                            ))
+                                        .toList(),
+                                    onChanged: (v) => controller.setGender(v ?? ''),
                                   ),
                                 ),
                               ),
@@ -313,7 +306,6 @@ class EditProfilePage extends GetView<ProfileController> {
                               controller: controller.biographyController,
                               hintText: 'Bio / About your astrology background...',
                               labelText: 'Biography / About Me',
-                              prefixIcon: Icons.info_outline_rounded,
                               maxLines: 4,
                             ),
                           ],

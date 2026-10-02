@@ -270,7 +270,12 @@ class AppPages {
       name: AppRoutes.chatRequest,
       page: () => const ChatRequestPage(),
       binding: BindingsBuilder(() {
-        Get.lazyPut<ChatRequestController>(() => ChatRequestController());
+        if (!Get.isRegistered<DashboardController>()) {
+          Get.put<DashboardController>(DashboardController(), permanent: true);
+        }
+        if (!Get.isRegistered<ChatRequestController>()) {
+          Get.put<ChatRequestController>(ChatRequestController(), permanent: true);
+        }
       }),
     ),
     GetPage(

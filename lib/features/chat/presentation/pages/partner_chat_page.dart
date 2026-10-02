@@ -199,24 +199,64 @@ class PartnerChatPage extends GetView<PartnerChatController> {
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (isImage)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  width: 200.w,
-                  placeholder: (context, url) => Container(
-                    height: 150.h,
+              GestureDetector(
+                onTap: () {
+                  Get.dialog(
+                    Dialog(
+                      backgroundColor: Colors.black87,
+                      insetPadding: EdgeInsets.all(12.w),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          InteractiveViewer(
+                            panEnabled: true,
+                            minScale: 0.8,
+                            maxScale: 4.0,
+                            child: Center(
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(color: Colors.white),
+                                ),
+                                errorWidget: (context, url, error) => const Center(
+                                  child: Icon(Icons.broken_image, color: Colors.white, size: 48),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                              onPressed: () => Get.back(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
                     width: 200.w,
-                    color: Colors.grey.shade200,
-                    child: const Center(child: CircularProgressIndicator()),
+                    placeholder: (context, url) => Container(
+                      height: 150.h,
+                      width: 200.w,
+                      color: Colors.grey.shade200,
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 150.h,
+                      width: 200.w,
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                    ),
+                    fit: BoxFit.cover,
                   ),
-                  errorWidget: (context, url, error) => Container(
-                    height: 150.h,
-                    width: 200.w,
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  ),
-                  fit: BoxFit.cover,
                 ),
               )
             else if (type == 'image')
@@ -334,8 +374,10 @@ class PartnerChatPage extends GetView<PartnerChatController> {
   }
 
   void _showAttachmentOptions(BuildContext context) {
-    Get.bottomSheet(
-      Container(
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -353,7 +395,7 @@ class PartnerChatPage extends GetView<PartnerChatController> {
                   icon: Icons.camera_alt,
                   label: 'camera'.tr,
                   onTap: () {
-                    Get.back();
+                    Navigator.of(sheetCtx).pop();
                     controller.pickAndSendImage(ImageSource.camera);
                   },
                 ),
@@ -361,7 +403,7 @@ class PartnerChatPage extends GetView<PartnerChatController> {
                   icon: Icons.photo_library,
                   label: 'gallery'.tr,
                   onTap: () {
-                    Get.back();
+                    Navigator.of(sheetCtx).pop();
                     controller.pickAndSendImage(ImageSource.gallery);
                   },
                 ),

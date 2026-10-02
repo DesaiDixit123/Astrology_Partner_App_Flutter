@@ -75,42 +75,6 @@ class OtpPage extends GetView<AuthController> {
 
                 SizedBox(height: 40.h),
 
-                // Demo OTP Indicator
-                Obx(
-                  () => controller.serverOtp.value.isNotEmpty
-                      ? FadeIn(
-                          child: Container(
-                            margin: EdgeInsets.only(bottom: 32.h),
-                            padding: EdgeInsets.all(16.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16.r),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.1),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline_rounded,
-                                  color: AppColors.gold,
-                                  size: 20.sp,
-                                ),
-                                SizedBox(width: 12.w),
-                                // Text(
-                                //   '${'demo_otp'.tr}: ${controller.serverOtp.value}',
-                                //   style: AppTextStyles.bodyMedium.copyWith(
-                                //     color: AppColors.gold,
-                                //     fontWeight: FontWeight.bold,
-                                //   ),
-                                // ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-
                 FadeInUp(
                   delay: const Duration(milliseconds: 200),
                   child: Row(

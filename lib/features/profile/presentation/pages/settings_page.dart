@@ -39,6 +39,11 @@ class SettingsPage extends GetView<AppLanguageController> {
             Text('more'.tr, style: AppTextStyles.h4),
             SizedBox(height: 12.h),
             _buildSettingsItem(
+              Icons.help_outline_rounded,
+              'help_support'.tr,
+              onTap: () => Get.toNamed(AppRoutes.help),
+            ),
+            _buildSettingsItem(
               Icons.privacy_tip_outlined,
               'privacy_policy'.tr,
               onTap: () => Get.toNamed(AppRoutes.privacyPolicy),

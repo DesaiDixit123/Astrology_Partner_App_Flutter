@@ -9,26 +9,39 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/utils/snackbar_util.dart';
 import '../../../../core/localization/app_translations.dart';
+import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 
 class SubscriptionScreen extends GetView<SubscriptionController> {
   const SubscriptionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.deepCosmic,
-      appBar: AppBar(
-        title: Text(
-          'subscriptions'.tr,
-          style: AppTextStyles.h3.copyWith(color: Colors.white),
-        ),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && Get.isRegistered<DashboardController>()) {
+          Get.find<DashboardController>().loadDashboard();
+        }
+      },
+      child: Scaffold(
         backgroundColor: AppColors.deepCosmic,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-          onPressed: () => Get.back(),
+        appBar: AppBar(
+          title: Text(
+            'subscriptions'.tr,
+            style: AppTextStyles.h3.copyWith(color: Colors.white),
+          ),
+          backgroundColor: AppColors.deepCosmic,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+            onPressed: () {
+              if (Get.isRegistered<DashboardController>()) {
+                Get.find<DashboardController>().loadDashboard();
+              }
+              Get.back();
+            },
+          ),
         ),
-      ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -95,7 +108,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
           ),
         );
       }),
-    );
+    ));
   }
 
   Widget _buildActiveSubscriptionCard(Map activeSub) {
@@ -128,27 +141,33 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'active_package'.tr,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primaryLight,
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'active_package'.tr,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primaryLight,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    (pkg['name']?.toString() ?? 'N/A').trPkg,
-                    style: AppTextStyles.h1.copyWith(color: Colors.white),
-                  ),
-                ],
+                    SizedBox(height: 4.h),
+                    Text(
+                      (pkg['name']?.toString() ?? 'N/A').trPkg,
+                      style: AppTextStyles.h2.copyWith(color: Colors.white),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+              SizedBox(width: 8.w),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: remainingDays > 7
                       ? Colors.greenAccent.withValues(alpha: 0.15)
@@ -164,7 +183,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   remainingDays > 0
                       ? 'days_remaining'.trParams({'days': '$remainingDays'})
                       : 'expired'.tr,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: remainingDays > 0 ? Colors.greenAccent : Colors.redAccent,
                     fontWeight: FontWeight.bold,
                   ),
@@ -481,42 +500,66 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
     final hasTax = pkg['tax_amount'] != null &&
         (pkg['tax_amount'] as num) > 0;
 
-    return Stack(
-      children: [
-        Container(
-          padding: EdgeInsets.all(20.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF152238),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: isPopular
-                  ? cardAccent.withValues(alpha: 0.7)
-                  : Colors.white.withValues(alpha: 0.1),
-              width: isPopular ? 2.w : 1.w,
-            ),
-            boxShadow: isPopular
-                ? [
-                    BoxShadow(
-                      color: cardAccent.withValues(alpha: 0.2),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    )
-                  ]
-                : null,
-          ),
-          child: Column(
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF152238),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: isPopular
+              ? cardAccent.withValues(alpha: 0.7)
+              : Colors.white.withValues(alpha: 0.1),
+          width: isPopular ? 2.w : 1.w,
+        ),
+        boxShadow: isPopular
+            ? [
+                BoxShadow(
+                  color: cardAccent.withValues(alpha: 0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                )
+              ]
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Package name + price ──────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Package name + price ──────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Expanded(
+                child: Text(
+                  pkgDisplayName,
+                  style: AppTextStyles.h2.copyWith(color: Colors.white),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Text(
-                      pkgDisplayName,
-                      style: AppTextStyles.h2.copyWith(color: Colors.white),
+                  if (isPopular) ...[
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [cardAccent, cardAccent.withValues(alpha: 0.7)],
+                        ),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        'popular'.tr,
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10.sp,
+                        ),
+                      ),
                     ),
-                  ),
+                    SizedBox(height: 6.h),
+                  ],
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
@@ -534,6 +577,8 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   ),
                 ],
               ),
+            ],
+          ),
               SizedBox(height: 6.h),
               Row(
                 children: [
@@ -666,30 +711,7 @@ class SubscriptionScreen extends GetView<SubscriptionController> {
                   )),
             ],
           ),
-        ),
-
-        // ── Popular badge ─────────────────────────────────────────
-        if (isPopular)
-          Positioned(
-            top: 14.h,
-            right: 14.w,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [cardAccent, cardAccent.withValues(alpha: 0.7)],
-                ),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Text(
-                'popular'.tr,
-                style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-      ],
-    );
+        );
   }
 
   Widget _buildFeatureLimitRow(IconData icon, String title, dynamic limit) {

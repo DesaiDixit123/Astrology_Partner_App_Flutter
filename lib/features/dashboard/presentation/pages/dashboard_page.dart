@@ -40,6 +40,13 @@ class DashboardPage extends GetView<DashboardController> {
           return _buildStatusScreen(approveStatus);
         }
 
+        // Avoid showing subscription lock screen while initial load is in progress
+        if (controller.isLoading.value &&
+            !controller.hasActiveSubscription.value &&
+            controller.dashboardData.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         final currentIdx = controller.currentIndex.value;
         final hasSub = controller.hasActiveSubscription.value;
 
@@ -470,7 +477,10 @@ class DashboardPage extends GetView<DashboardController> {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => Get.toNamed(AppRoutes.subscription),
+                      onPressed: () async {
+                        await Get.toNamed(AppRoutes.subscription);
+                        await controller.loadDashboard();
+                      },
                       icon: Icon(Icons.shopping_bag_rounded, size: 20.sp),
                       label: Text(
                         'View & Buy Packages',

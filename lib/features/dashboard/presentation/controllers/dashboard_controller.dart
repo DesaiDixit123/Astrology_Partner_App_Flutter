@@ -8,6 +8,7 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/snackbar_util.dart';
 import '../../../chat/presentation/controllers/chat_inbox_controller.dart';
+import '../../../chat/presentation/controllers/chat_request_controller.dart';
 import '../../../calls/presentation/controllers/partner_call_controller.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 
@@ -32,6 +33,7 @@ class DashboardController extends GetxController {
 
   final _api = ApiService.instance;
   io.Socket? _socket;
+  io.Socket? get socket => _socket;
 
   @override
   void onInit() {
@@ -69,11 +71,9 @@ class DashboardController extends GetxController {
     final cachedApprovalStatus = prefs.getString(
       AppConstants.keyApprovalStatus,
     );
-    if (cachedApprovalStatus == null || cachedApprovalStatus.isEmpty) {
-      return;
+    if (cachedApprovalStatus != null && cachedApprovalStatus.isNotEmpty) {
+      profile['approve_status'] = cachedApprovalStatus;
     }
-
-    profile['approve_status'] = cachedApprovalStatus;
 
     final cachedRejectionReason = prefs.getString(
       AppConstants.keyApprovalRejectionReason,
@@ -82,6 +82,11 @@ class DashboardController extends GetxController {
       profile['rejection_reason'] = cachedRejectionReason;
     } else {
       profile.remove('rejection_reason');
+    }
+
+    final cachedHasSub = prefs.getBool('has_active_subscription');
+    if (cachedHasSub != null) {
+      hasActiveSubscription.value = cachedHasSub;
     }
 
     profile.refresh();
@@ -108,33 +113,59 @@ class DashboardController extends GetxController {
     }
   }
 
+  void updateActiveSubscription(Map? activeSub) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (activeSub != null && activeSub.isNotEmpty) {
+      final status = activeSub['status']?.toString().toLowerCase().trim();
+      final isStatusActive = status == null || status == 'active' || status.isEmpty;
+      final expiryRaw = activeSub['expiry_date'] ?? activeSub['expiryDate'];
+      bool isNotExpired = true;
+      if (expiryRaw != null) {
+        final expiry = DateTime.tryParse(expiryRaw.toString());
+        if (expiry != null && expiry.isBefore(DateTime.now())) {
+          isNotExpired = false;
+        }
+      }
+      activeSubscriptionData.value = Map<String, dynamic>.from(activeSub);
+      final hasSub = isStatusActive && isNotExpired;
+      hasActiveSubscription.value = hasSub;
+      await prefs.setBool('has_active_subscription', hasSub);
+    } else {
+      activeSubscriptionData.clear();
+      hasActiveSubscription.value = false;
+      await prefs.setBool('has_active_subscription', false);
+    }
+  }
+
   Future<void> loadDashboard() async {
     isLoading.value = true;
-    final results = await Future.wait([
-      _api.get(ApiConstants.dashboard),
-      _api.get(ApiConstants.profile),
-      _api.get(ApiConstants.subscriptionActive),
-    ]);
-    final res = results[0];
-    final profileRes = results[1];
-    final subRes = results[2];
-    isLoading.value = false;
+    try {
+      final results = await Future.wait([
+        _api.get(ApiConstants.dashboard),
+        _api.get(ApiConstants.profile),
+        _api.get(ApiConstants.subscriptionActive),
+      ]);
+      final res = results[0];
+      final profileRes = results[1];
+      final subRes = results[2];
 
-    if (ApiService.isSuccess(subRes)) {
-      final subData = ApiService.getData(subRes);
-      if (subData is Map && subData['active_subscription'] != null) {
-        final activeSub = subData['active_subscription'] as Map;
-        activeSubscriptionData.value = activeSub;
-        hasActiveSubscription.value = activeSub['status'] == 'active';
-      } else {
-        activeSubscriptionData.clear();
-        hasActiveSubscription.value = false;
+      if (ApiService.isSuccess(subRes)) {
+        final subData = ApiService.getData(subRes);
+        if (subData is Map && subData['active_subscription'] != null) {
+          final activeSub = subData['active_subscription'];
+          if (activeSub is Map) {
+            updateActiveSubscription(activeSub);
+          } else {
+            updateActiveSubscription(null);
+          }
+        } else {
+          updateActiveSubscription(null);
+        }
       }
-    }
 
-    if (ApiService.isSuccess(res)) {
-      final data = ApiService.getData(res) as Map<String, dynamic>?;
-      if (data != null) {
+      if (ApiService.isSuccess(res)) {
+        final data = ApiService.getData(res) as Map<String, dynamic>?;
+        if (data != null) {
         dashboardData.value = data;
 
         final dashboardProfile = Map<String, dynamic>.from(
@@ -181,6 +212,11 @@ class DashboardController extends GetxController {
         }
       }
     }
+  } catch (e) {
+    debugPrint('Error in loadDashboard: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void _initSocket() {
@@ -209,18 +245,42 @@ class DashboardController extends GetxController {
     _socket?.on('new_chat_session', (data) {
       if (data is Map) {
         debugPrint('New chat session received: $data');
-        if (Get.isDialogOpen == true) return; // Prevent duplicate dialogs
+
+        // Never interrupt an ongoing chat or call!
+        if (Get.currentRoute == AppRoutes.partnerChat || Get.currentRoute == AppRoutes.voiceCall || Get.currentRoute == AppRoutes.videoCall) {
+          debugPrint('Dashboard: Astrologer is already in chat/call, skipping redirect');
+          return;
+        }
+
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+
+        if (Get.isRegistered<ChatRequestController>()) {
+          Get.find<ChatRequestController>().setIncomingRequest(data);
+        }
 
         if (Get.isRegistered<ChatInboxController>()) {
           Get.find<ChatInboxController>().fetchChatSessions();
         }
 
         loadQueue(); // Synchronize the Requests tab
-        Get.toNamed(AppRoutes.chatRequest, arguments: data);
+        currentIndex.value = 1;
+        if (Get.currentRoute != AppRoutes.dashboard) {
+          if (Get.currentRoute == AppRoutes.chatRequest) {
+            Get.back();
+          } else {
+            Get.until((route) => Get.currentRoute == AppRoutes.dashboard);
+            currentIndex.value = 1;
+          }
+        }
       }
     });
 
     _socket?.on('cancel_chat_request', (data) {
+      if (Get.isRegistered<ChatRequestController>()) {
+        Get.find<ChatRequestController>().clearRequest();
+      }
       loadQueue(); // Synchronize the Requests tab
       if (Get.isRegistered<ChatInboxController>()) {
         Get.find<ChatInboxController>().fetchChatSessions();
@@ -347,9 +407,10 @@ class DashboardController extends GetxController {
       textConfirm: 'Buy Subscription',
       textCancel: 'Cancel',
       confirmTextColor: Colors.white,
-      onConfirm: () {
+      onConfirm: () async {
         Get.back();
-        Get.toNamed(AppRoutes.subscription);
+        await Get.toNamed(AppRoutes.subscription);
+        await loadDashboard();
       },
     );
   }

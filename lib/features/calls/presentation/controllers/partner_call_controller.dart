@@ -173,6 +173,10 @@ class PartnerCallController extends GetxController {
     );
   }
 
+  void handleIncomingFromNotification(Map data, {required bool isVideo}) {
+    _handleIncomingCall(data, isVideo: isVideo);
+  }
+
   Future<void> acceptCall({required bool isVideo}) async {
     _audioPlayer.stop();
     // Request Permissions

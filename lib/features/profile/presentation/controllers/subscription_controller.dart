@@ -45,6 +45,10 @@ class SubscriptionController extends GetxController {
         if (data is Map) {
           activeSubscription.value = data['active_subscription'] ?? {};
           subscriptionHistory.value = data['history'] ?? [];
+
+          if (Get.isRegistered<DashboardController>()) {
+            Get.find<DashboardController>().updateActiveSubscription(activeSubscription.value);
+          }
         }
       }
 
@@ -99,7 +103,7 @@ class SubscriptionController extends GetxController {
           'description': name,
           'prefill': {
             'contact': '9904755099',
-            'email': 'admin@thekhushiempire.com',
+            'email': 'support@vedikvani.com',
           },
           'theme': {'color': '#6C63FF'},
           'retry': {'enabled': true, 'max_count': 1},
@@ -141,7 +145,7 @@ class SubscriptionController extends GetxController {
       'description': pkgName,
       'prefill': {
         'contact': '9904755099',
-        'email': 'admin@thekhushiempire.com',
+        'email': 'support@vedikvani.com',
       },
       'theme': {'color': '#6C63FF'},
       'retry': {'enabled': true, 'max_count': 1},
@@ -183,14 +187,15 @@ class SubscriptionController extends GetxController {
         SnackbarUtil.success('Package purchased successfully!');
 
         // Reload dashboard state so subscription lock is lifted
+        await loadSubscriptionData();
+
         if (Get.isRegistered<DashboardController>()) {
           final dashCtrl = Get.find<DashboardController>();
-          dashCtrl.fetchDashboard();
+          dashCtrl.updateActiveSubscription(activeSubscription.value);
+          await dashCtrl.loadDashboard();
           // Switch bottom nav to Home tab (index 0)
           dashCtrl.changeTab(0);
         }
-
-        await loadSubscriptionData();
 
         // Pop back to dashboard — Do NOT use Get.until(isFirst)
         // because it destroys all controllers (HomeController etc.)
@@ -238,12 +243,14 @@ class SubscriptionController extends GetxController {
 
       if (ApiService.isSuccess(res)) {
         SnackbarUtil.success('Package purchased successfully!');
+        await loadSubscriptionData();
 
         if (Get.isRegistered<DashboardController>()) {
-          Get.find<DashboardController>().fetchDashboard();
+          final dashCtrl = Get.find<DashboardController>();
+          dashCtrl.updateActiveSubscription(activeSubscription.value);
+          await dashCtrl.loadDashboard();
+          dashCtrl.changeTab(0);
         }
-
-        await loadSubscriptionData();
         return true;
       } else {
         SnackbarUtil.error(ApiService.getMessage(res));

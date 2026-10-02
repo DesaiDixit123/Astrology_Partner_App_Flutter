@@ -53,6 +53,9 @@ Future<void> main() async {
 }
 
 Future<void> _resolveBaseUrl() async {
+  if (ApiConstants.baseUrl.startsWith('https://')) {
+    return; // Using live production URL
+  }
   // First check if the currently hardcoded one works
   if (await _checkIpPort(ApiConstants.baseUrl)) {
     return; // Already good

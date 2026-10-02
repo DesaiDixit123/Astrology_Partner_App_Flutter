@@ -23,8 +23,12 @@ class LiveDashboardPage extends StatefulWidget {
 }
 
 class _LiveDashboardPageState extends State<LiveDashboardPage> {
-  final LiveController _liveController = Get.find<LiveController>();
-  final DashboardController _dashboardController = Get.find<DashboardController>();
+  final LiveController _liveController = Get.isRegistered<LiveController>()
+      ? Get.find<LiveController>()
+      : Get.put(LiveController(), permanent: true);
+  DashboardController get _dashboardController => Get.isRegistered<DashboardController>()
+      ? Get.find<DashboardController>()
+      : Get.put(DashboardController(), permanent: true);
 
   RtcEngine? _engine;
   IO.Socket? _socket;

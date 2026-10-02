@@ -18,12 +18,20 @@ class HomePage extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final dashboardController = Get.find<DashboardController>();
     // navbar pill (70.h) + gap above pill (12.h) + system gesture bar + extra breathing room
-    final navbarHeight = 70.h + 12.h + MediaQuery.of(context).padding.bottom + 16.h;
+    final navbarHeight = 70.h + 12.h + MediaQuery.of(context).padding.bottom + 28.h;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('home'.tr),
+        title: Text(
+          'home'.tr,
+          style: AppTextStyles.h2.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: false,
+        titleSpacing: 20.w,
         actions: [
           Obx(() => _buildOnlineToggle(dashboardController)),
           SizedBox(width: 16.w),
@@ -61,17 +69,18 @@ class HomePage extends GetView<HomeController> {
   }
 
   Widget _buildOnlineToggle(DashboardController dashboardController) {
+    final isOnline = dashboardController.isOnline.value;
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8.h),
-      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      padding: EdgeInsets.only(left: 10.w, right: 2.w),
       decoration: BoxDecoration(
-        color: dashboardController.isOnline.value
+        color: isOnline
             ? AppColors.online.withValues(alpha: 0.1)
-            : AppColors.offline.withValues(alpha: 0.1),
+            : AppColors.offline.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: dashboardController.isOnline.value
-              ? AppColors.online.withValues(alpha: 0.2)
+          color: isOnline
+              ? AppColors.online.withValues(alpha: 0.25)
               : AppColors.offline.withValues(alpha: 0.2),
         ),
       ),
@@ -79,15 +88,13 @@ class HomePage extends GetView<HomeController> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 8.w,
-            height: 8.w,
+            width: 7.w,
+            height: 7.w,
             decoration: BoxDecoration(
-              color: dashboardController.isOnline.value
-                  ? AppColors.online
-                  : AppColors.offline,
+              color: isOnline ? AppColors.online : AppColors.offline,
               shape: BoxShape.circle,
               boxShadow: [
-                if (dashboardController.isOnline.value)
+                if (isOnline)
                   BoxShadow(
                     color: AppColors.online.withValues(alpha: 0.5),
                     blurRadius: 4,
@@ -96,22 +103,27 @@ class HomePage extends GetView<HomeController> {
               ],
             ),
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 6.w),
           Text(
-            dashboardController.isOnline.value ? 'online'.tr : 'offline'.tr,
+            isOnline ? 'online'.tr : 'offline'.tr,
             style: AppTextStyles.bodySmall.copyWith(
-              color: dashboardController.isOnline.value
-                  ? AppColors.online
-                  : AppColors.offline,
+              color: isOnline ? AppColors.online : AppColors.offline,
               fontWeight: FontWeight.bold,
+              fontSize: 12.sp,
             ),
           ),
-          SizedBox(width: 4.w),
-          Switch(
-            value: dashboardController.isOnline.value,
-            onChanged: (val) => dashboardController.toggleOnlineStatus(val),
-            activeThumbColor: AppColors.online,
-            //scale: 0.8,
+          SizedBox(width: 2.w),
+          Transform.scale(
+            scale: 0.72,
+            child: Switch(
+              value: isOnline,
+              onChanged: (val) => dashboardController.toggleOnlineStatus(val),
+              activeColor: AppColors.online,
+              activeTrackColor: AppColors.online.withValues(alpha: 0.35),
+              inactiveThumbColor: Colors.grey.shade500,
+              inactiveTrackColor: Colors.grey.shade200,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
         ],
       ),
@@ -394,19 +406,26 @@ class HomePage extends GetView<HomeController> {
           children: [
             // ── Header ────────────────────────────────────────────
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.stars_rounded, color: Colors.white, size: 20.sp),
-                    SizedBox(width: 8.w),
-                    Text(
-                      pkgName.trPkg,
-                      style: AppTextStyles.h4.copyWith(color: Colors.white),
-                    ),
-                  ],
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(Icons.stars_rounded, color: Colors.white, size: 20.sp),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          pkgName.trPkg,
+                          style: AppTextStyles.h4.copyWith(color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                SizedBox(width: 8.w),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (expiryText.isNotEmpty)
                       Container(
@@ -425,7 +444,7 @@ class HomePage extends GetView<HomeController> {
                           ),
                         ),
                       ),
-                    SizedBox(width: 6.w),
+                    SizedBox(width: 4.w),
                     Icon(Icons.chevron_right_rounded, color: Colors.white54, size: 20.sp),
                   ],
                 ),

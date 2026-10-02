@@ -10,7 +10,7 @@ class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({super.key});
 
   static const String supportPhone = '9904755099';
-  static const String supportEmail = 'admin@thekhushiempire.com';
+  static const String supportEmail = 'support@vedikvani.com';
 
   Future<void> _makePhoneCall() async {
     final Uri phoneUri = Uri(scheme: 'tel', path: supportPhone);
@@ -102,7 +102,7 @@ class HelpSupportPage extends StatelessWidget {
             ),
             _buildFaqItem(
               'How do I update my consultation charges?',
-              'Contact admin via support phone (+91 9904755099) or email (admin@thekhushiempire.com) to request rate adjustments.',
+              'Contact admin via support phone (+91 9904755099) or email (support@vedikvani.com) to request rate adjustments.',
             ),
             _buildFaqItem(
               'What should I do if a call gets disconnected?',
