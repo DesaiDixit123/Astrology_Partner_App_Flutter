@@ -136,7 +136,7 @@ class ApiConstants {
 
   // ── Razorpay ────────────────────────────────────────────────
   // Test Key from backend .env (switch to live key for production)
-  static const String razorpayKeyId = 'rzp_live_T690exIdAcKXHs';
+  static const String razorpayKeyId = 'rzp_live_TizoH6DpiW0jl7';
 
   // ── App Version & Force Update ─────────────────────────────
   static const String appVersionCheck = '/partner/app-version/check';
